@@ -9,7 +9,7 @@ from app_variacao.ui.core.base_types import (
     AbstractObserver, AbstractNotifyProvider,
     MessageNotification, T, CoreDict
 )
-from soup_files import File, Directory, UserAppDir
+from app_variacao.util import File, Directory, UserAppDir
 
 
 def show_alert(text: str):

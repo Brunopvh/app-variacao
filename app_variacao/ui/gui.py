@@ -1,6 +1,6 @@
 import threading
 
-from app_variacao.ui_core.core import (
+from app_variacao.ui.core import (
     BasePage, BaseWindow, MyApp, Container, ProgressBarTkIndeterminate,
     ProgressBar, ProgressBarTkDeterminate, EnumThemes, MappingStyles,
     MessageNotification

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VENV_NAME='user_venv'
+VENV_NAME='test'
 PREFIX=~/"var/venv"
 if [[ -d '/mnt/dados' ]]; then
   PREFIX='/mnt/dados/var/venv'

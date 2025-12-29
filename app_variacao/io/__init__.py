@@ -2,7 +2,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from io import BytesIO
 import zipfile
-from soup_files import Directory, File
+from app_variacao.soup_files import Directory, File
 
 
 class OutputStream(ABC):

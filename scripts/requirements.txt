@@ -1,2 +1,2 @@
 pandas
-soup_files>=1.4
+

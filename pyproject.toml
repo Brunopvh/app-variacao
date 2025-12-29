@@ -14,13 +14,13 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 dependencies = [
-    "soup_files>=1.4.1",
     "pandas",
 ]
 
 [tool.setuptools]
 packages = [
     "app_variacao",
+    "app_variacao.soup_files",
     "app_variacao.documents",
     "app_variacao.documents.erros",
     "app_variacao.documents.sheet.csv",
