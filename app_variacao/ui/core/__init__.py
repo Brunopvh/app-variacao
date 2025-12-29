@@ -38,6 +38,9 @@ class EnumThemes(StrEnum):
     PBAR_GREEN = "Custom.Horizontal.TProgressbar"
     PBAR_PURPLE_LIGHT = "Thin.Horizontal.TProgressbar"
     PBAR_PURPLE = "Purple.Horizontal.TProgressbar"
+    # Temas Para Labels
+    LABEL_PURPLE_LIGHT = "LargeFont.TLabel"
+    LABEL_DEFAULT = "BoldLargeFont.TLabel"  #'Custom.TLabel'
 
 
 class AppStyles(object):
