@@ -1,10 +1,12 @@
 import threading
-
+import os.path
 from app_variacao.ui.core import (
     BasePage, BaseWindow, MyApp, Container, ContainerH, ContainerV,
     ProgressBarTkIndeterminate, ProgressBarTkDeterminate,
     ProgressBar, EnumThemes, MappingStyles, MessageNotification
 )
+from app_variacao.ui.controllers import ControllerVariacao
+from app_variacao.util import LibraryDocs, File
 from tkinter import ttk
 import tkinter as tk
 from threading import Thread
@@ -48,11 +50,12 @@ class PageVariacao(BasePage):
         self.set_page_route('/variacao')
         self.set_page_name('Váriação de leitura')
         self.container1 = ContainerH(self.frame_master)
+        self._controller = ControllerVariacao()
 
         self.btn_sheet_variacao = ttk.Button(
             self.container1,
             text='Selecionar\nPlanilha',
-            command=(),
+            command=self.select_sheet,
             style=self.myapp_window.get_styles_mapping().get_style_buttons(),
             #width=25
         )
@@ -67,6 +70,14 @@ class PageVariacao(BasePage):
             command=self.back_page,
             text='Voltar',
         )
+        self.selected_sheet: str = None
+
+    def select_sheet(self):
+        self.selected_sheet: str = self._controller.get_file_disk(LibraryDocs.CSV)
+        if self.selected_sheet is not None:
+            self.lb_sheet_variacao.config(
+                text=f'Planilha selecionada: {os.path.basename(self.selected_sheet)}'
+            )
 
     def back_page(self):
         self.myapp_window.get_navigator().pop()
