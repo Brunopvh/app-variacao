@@ -1,6 +1,7 @@
 from __future__ import annotations
+from typing import Any
 from app_variacao.ui.core.base_types import CoreDict
-from app_variacao.util import File, Directory, LibraryDocs, InputFiles
+from app_variacao.util import File, Directory, LibraryDocs, InputFiles, UserFileSystem
 from tkinter import filedialog
 import os.path
 
@@ -17,7 +18,7 @@ class AppFileDialog(object):
 
     def __init__(self) -> None:
         self.prefs_app: dict = dict()
-        self.prefs_app['initial_inputdir'] = Directory('.')
+        self.prefs_app['initial_inputdir'] = UserFileSystem().userDownloads
 
     def open_filename(self, input_type: LibraryDocs = LibraryDocs.ALL) -> str | None:
         """
