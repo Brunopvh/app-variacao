@@ -7,15 +7,14 @@ ROOT_DIR = os.path.dirname(TEST_FILE)
 MODULES_DIR = os.path.join(ROOT_DIR, 'digitalized')
 import app_variacao.soup_files as sp
 
-output_dir = sp.UserFileSystem().userDownloads.concat('output', create=True)
+output_dir = sp.UserFileSystem().get_user_downloads().concat('output', create=True)
 sys.path.insert(0, MODULES_DIR)
 
 
 def test():
-    from app_variacao.ui.core import run_app
-    from app_variacao.ui.gui import MainApp
+    from app_variacao.app import run_app, AppVariacao
 
-    app = MainApp()
+    app = AppVariacao()
     run_app(app)
 
 

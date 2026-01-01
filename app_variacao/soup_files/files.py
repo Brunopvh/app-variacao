@@ -27,7 +27,7 @@ class ExtensionFiles(Enum):
     JSON = '.json'
 
 
-class LibraryDocs(Enum):
+class EnumDocFiles(Enum):
     """
         Enum para tipos de documentos como imagens, PDFs, Planilhas e JSON.
     """
@@ -48,9 +48,23 @@ class LibraryDocs(Enum):
         '.csv', '.txt', '.xlsx', '.xls', '.ods',
         '.pdf',
         '.json',
+        '.zip',
+        '.*'
     ]
     #
-    ALL = None
+    ALL = "ALL"
+
+    @property
+    def values(self) -> list[str]:
+        return [
+        '.png', '.jpg', '.jpeg', '.svg',
+        '.csv', '.txt', '.xlsx', '.xls', '.ods',
+        '.pdf',
+        '.json',
+        '.zip',
+        '.*'
+    ]
+
 
 
 class File(object):
@@ -58,6 +72,9 @@ class File(object):
         if os.path.isdir(filename):
             raise ValueError(f'{__class__.__name__} File() não pode ser um diretório.')
         self._abs_filename: str = os.path.abspath(filename)
+
+    def __repr__(self):
+        return f'{__class__.__name__}() {self.extension()} => {self.absolute()}'
 
     def __eq__(self, value: File):
         if not isinstance(value, File):
@@ -69,43 +86,43 @@ class File(object):
 
     def is_image(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.IMAGE.value else False
+            return True if self.extension() in EnumDocFiles.IMAGE.value else False
         except:
             return False
 
     def is_pdf(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.PDF.value else False
+            return True if self.extension() in EnumDocFiles.PDF.value else False
         except:
             return False
 
     def is_excel(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.EXCEL.value else False
+            return True if self.extension() in EnumDocFiles.EXCEL.value else False
         except:
             return False
 
     def is_csv(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.CSV.value else False
+            return True if self.extension() in EnumDocFiles.CSV.value else False
         except:
             return False
 
     def is_sheet(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.SHEET.value else False
+            return True if self.extension() in EnumDocFiles.SHEET.value else False
         except:
             return False
 
     def is_json(self) -> bool:
         try:
-            return True if self.extension() in LibraryDocs.JSON.value else False
+            return True if self.extension() in EnumDocFiles.JSON.value else False
         except:
             return False
 
     def is_ods(self):
         try:
-            return True if self.extension() in LibraryDocs.ODS.value else False
+            return True if self.extension() in EnumDocFiles.ODS.value else False
         except:
             return False
 
@@ -200,6 +217,9 @@ class Directory(object):
 
     def absolute(self) -> str:
         return self.__abs_path
+
+    def __repr__(self):
+        return f'{__class__.__name__}: {self.absolute()}'
 
     def __eq__(self, value):
         if not isinstance(value, Directory):
@@ -301,28 +321,25 @@ class Directory(object):
         )
 
 
-class InputFiles(object):
+class ContentFiles(object):
     """
         Obter uma lista de arquivos/documentos do diretório informado.
     """
 
-    def __init__(self, d: Directory, *, maxFiles: int = 5000):
+    def __init__(self, d: Directory, *, max_files: int = 5000):
         if not isinstance(d, Directory):
             raise ValueError(f'{__class__.__name__}\nUse: Directory(), não {type(d)}')
         self._input_dir: Directory = d
-        self.maxFiles: int = maxFiles
+        self.__max_files: int = max_files
 
-    @property
-    def images(self) -> list[File]:
-        return self.get_files(file_type=LibraryDocs.IMAGE)
+    def get_images(self) -> list[File]:
+        return self.get_files(file_type=EnumDocFiles.IMAGE)
 
-    @property
-    def pdfs(self) -> list[File]:
-        return self.get_files(file_type=LibraryDocs.PDF)
+    def get_pdfs(self) -> list[File]:
+        return self.get_files(file_type=EnumDocFiles.PDF)
 
-    @property
-    def sheets(self) -> list[File]:
-        return self.get_files(file_type=LibraryDocs.SHEET)
+    def get_sheets(self) -> list[File]:
+        return self.get_files(file_type=EnumDocFiles.SHEET)
 
     def get_files_with(self, *, infile: str, sort: bool = True) -> list[File]:
         """
@@ -340,18 +357,18 @@ class InputFiles(object):
                     File(os.path.abspath(file))
                 )
                 count += 1
-            if count >= self.maxFiles:
+            if count >= self.__max_files:
                 break
         if sort:
             content_files.sort()
         return content_files
 
-    def __get_files_recursive(self, *, file_type: LibraryDocs, sort: bool) -> list[File]:
+    def __get_files_recursive(self, *, file_type: EnumDocFiles, sort: bool) -> list[File]:
         #
         _paths: list[str] = self._input_dir.get_files()
         _all_files: list[File] = list()
         count: int = 0
-        if file_type == LibraryDocs.ALL:
+        if file_type == EnumDocFiles.ALL:
             # Todos os tipos de arquivos
             for p in _paths:
                 if not os.path.isfile(p):
@@ -360,7 +377,7 @@ class InputFiles(object):
                     File(os.path.abspath(p))
                 )
                 count += 1
-                if count >= self.maxFiles:
+                if count >= self.__max_files:
                     break
         else:
             # Arquivos especificados em LibraryDocs
@@ -376,23 +393,23 @@ class InputFiles(object):
                         File(os.path.abspath(p))
                     )
                     count += 1
-                if count >= self.maxFiles:
+                if count >= self.__max_files:
                     break
         if sort:
             _all_files.sort(key=File.absolute)
         return _all_files
 
-    def __get_files_no_recursive(self, *, file_type: LibraryDocs, sort: bool) -> list[File]:
+    def __get_files_no_recursive(self, *, file_type: EnumDocFiles, sort: bool) -> list[File]:
         _content_files: list[File] = self._input_dir.content_files(recursive=False)
         _all_files: list[File] = []
         count: int = 0
 
-        if file_type == LibraryDocs.ALL:
+        if file_type == EnumDocFiles.ALL:
             # Todos os tipos de arquivos
             for file in _content_files:
                 _all_files.append(file)
                 count += 1
-                if count == self.maxFiles:
+                if count == self.__max_files:
                     break
         else:
             # Arquivos especificados em LibraryDocs
@@ -400,7 +417,7 @@ class InputFiles(object):
                 if file.extension() in file_type.value:
                     _all_files.append(file)
                     count += 1
-                    if count == self.maxFiles:
+                    if count == self.__max_files:
                         break
         if sort:
             _all_files.sort(key=File.absolute)
@@ -408,7 +425,7 @@ class InputFiles(object):
 
     def get_files(
             self, *,
-            file_type: LibraryDocs = LibraryDocs.ALL_DOCUMENTS,
+            file_type: EnumDocFiles = EnumDocFiles.ALL_DOCUMENTS,
             sort: bool = True,
             recursive: bool = True
     ) -> list[File]:
@@ -508,20 +525,43 @@ class UserFileSystem(object):
     """
 
     def __init__(self, base_home: Directory = None):
-        if base_home is None:
-           base_home = os.path.expanduser("~")
-        # Tenta pegar a HOME (Unix), se não existir, pega USERPROFILE (Windows)
-        #base_home = os.environ.get('HOME') or os.environ.get('USERPROFILE')
-        self.baseHome = base_home
-        self.baseHome: Directory = base_home
-        self.userDownloads: Directory = self.baseHome.concat('Downloads', create=True)
-        self.userVarDir: Directory = self.baseHome.concat('var', create=True)
+        self.__base_home: Directory | None = base_home
+        if self.__base_home is None:
+            # _home = Directory(os.path.expanduser("~"))
+            # HOME (Unix) / USERPROFILE (Windows)
+            _home = os.environ.get('HOME') or os.environ.get('USERPROFILE')
+            if _home is None or _home == "":
+                _home = Directory(os.path.expanduser("~"))
+            self.__base_home = Directory(_home)
+        self.__user_downloads: Directory = self.__base_home.concat('Downloads', create=True)
+        self.__user_var_dir: Directory = self.__base_home.concat('var', create=True)
+
+    def __repr__(self):
+        return f'{__class__.__name__}(): Home {self.get_user_home()}'
+
+    def get_user_dir_var(self) -> Directory:
+        return self.__user_var_dir
+
+    def set_user_dir_var(self, d: Directory) -> None:
+        self.__user_var_dir = d
+
+    def get_user_downloads(self) -> Directory:
+        return self.__user_downloads
+
+    def set_user_downloads(self, d: Directory) -> None:
+        self.__user_downloads = d
+
+    def get_user_home(self) -> Directory | None:
+        return self.__base_home
+
+    def set_user_home(self, d: Directory) -> None:
+        self.__base_home = d
 
     def config_dir(self) -> Directory:
-        return self.userVarDir.concat('config', create=True)
+        return self.__user_var_dir.concat('config', create=True)
 
     def cache_dir(self) -> Directory:
-        return self.userVarDir.concat('cache', create=True)
+        return self.__user_var_dir.concat('cache', create=True)
 
 
 class UserAppDir(object):
@@ -532,8 +572,8 @@ class UserAppDir(object):
     def __init__(self, appname: str, *, user_file_system: UserFileSystem = UserFileSystem()):
         self.appname = appname
         self.userFileSystem: UserFileSystem = user_file_system
-        self.workspaceDirApp: Directory = self.userFileSystem.userDownloads.concat(self.appname, create=True)
-        self.installDir: Directory = self.userFileSystem.userVarDir.concat('opt').concat(self.appname, create=True)
+        self.workspaceDirApp = self.userFileSystem.get_user_downloads().concat(self.appname, create=True)
+        self.installDir = self.userFileSystem.get_user_dir_var().concat('opt').concat(self.appname, create=True)
 
     def cache_dir_app(self) -> Directory:
         return self.userFileSystem.cache_dir().concat(self.appname, create=True)

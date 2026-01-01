@@ -1,6 +1,6 @@
 from hashlib import md5
 from app_variacao.soup_files import (
-    File, Directory, InputFiles, LibraryDocs, UserAppDir, UserFileSystem
+    File, Directory, ContentFiles, EnumDocFiles, UserAppDir, UserFileSystem
 )
 
 
