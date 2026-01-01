@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
+__version__ = '1.4.3'
 
-from .version import __version__
-from .progress import (
-    ProgressBarAdapter, ProgressBarSimple, ABCProgressBar,
-    CreatePbar, TextProgress
-)
 from .files import (
     File,
     Directory,

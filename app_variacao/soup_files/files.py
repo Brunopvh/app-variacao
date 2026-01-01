@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-#
 """
     Esté módulo serve para manipulação de arquivos, diretórios e documentos
 entre outros. Não depende de módulos externos apenas de builtins e stdlib.
@@ -9,7 +7,7 @@ from enum import Enum
 import os
 import json
 import platform
-from pathlib import Path
+#from pathlib import Path
 from hashlib import md5
 
 # Windows / Linux / ...
@@ -59,22 +57,11 @@ class File(object):
     def __init__(self, filename: str):
         if os.path.isdir(filename):
             raise ValueError(f'{__class__.__name__} File() não pode ser um diretório.')
-        self.filename: str = os.path.abspath(filename)
-        self.__path: Path = Path(self.filename)
+        self._abs_filename: str = os.path.abspath(filename)
 
-    @property
-    def path(self) -> Path:
-        return self.__path
-
-    @path.setter
-    def path(self, new: Path):
-        if not isinstance(new, Path):
-            return
-        self.__path = new
-
-    def __eq__(self, value):
+    def __eq__(self, value: File):
         if not isinstance(value, File):
-            return NotImplemented
+            return ValueError()
         return self.absolute() == value.absolute()
 
     def __hash__(self):
@@ -133,30 +120,30 @@ class File(object):
 
     def get_text(self) -> str | None:
         try:
-            return self.__path.read_text()
+            with open(self.absolute(), 'rt') as fp:
+                return fp.read()
         except Exception as e:
-            print(e)
+            print(f'{__class__.__name__} {e}')
             return None
 
-    def write_string(self, s: str):
-        if s is None:
-            return False
+    def write_string(self, s: str) -> bool:
         try:
-            self.__path.write_text(s)
-        except Exception as e:
-            print(e)
+            # Definir encoding é essencial para evitar bugs silenciosos
+            with open(self.absolute(), mode='a', encoding='utf-8') as fp:
+                fp.write(s)
+        except OSError as e:
+            # self.__class__.__name__ garante o nome correto da classe atual
+            print(f"[{self.__class__.__name__}] Erro ao escrever no arquivo: {e}")
             return False
-        else:
-            return True
+        return True
 
     def write_list(self, items: list[str]) -> bool:
-        # Abrindo o arquivo em modo de escrita
         if len(items) == 0:
             return False
         try:
-            with open(self.filename, "w", encoding="utf-8") as file:
+            with open(self.absolute(), "w", encoding="utf-8") as file:
                 for string in items:
-                    file.write(string + "\n")  # Adiciona uma quebra de linha após cada string
+                    file.write(string + "\n")
         except Exception as e:
             print(e)
             return False
@@ -166,36 +153,39 @@ class File(object):
     def name(self):
         e = self.extension()
         if (e is None) or (e == ''):
-            return os.path.basename(self.filename)
-        return os.path.basename(self.filename).replace(e, '')
+            return os.path.basename(self._abs_filename)
+        return os.path.basename(self._abs_filename).replace(e, '')
 
     def name_absolute(self) -> str:
         e = self.extension()
         if (e is None) or (e == ''):
-            return self.filename
-        return self.filename.replace(e, '')
+            return self._abs_filename
+        return self._abs_filename.replace(e, '')
 
-    def extension(self) -> str:
-        return self.__path.suffix
+    def extension(self) -> str | None:
+        try:
+            return os.path.splitext(self.absolute())[1]
+        except:
+            return None
 
     def dirname(self) -> str:
-        return os.path.dirname(self.filename)
+        return os.path.dirname(self._abs_filename)
 
     def basename(self) -> str:
-        return os.path.basename(self.filename)
+        return os.path.basename(self._abs_filename)
 
     def exists(self) -> bool:
-        return self.__path.exists()
+        return os.path.exists(self.absolute())
 
     def absolute(self) -> str:
-        return self.filename
+        return self._abs_filename
 
     def size(self):
-        return os.path.getsize(self.filename)
+        return os.path.getsize(self._abs_filename)
 
     def md5(self) -> str | None:
         """Retorna a hash md5 de um arquivo se ele existir no disco."""
-        if not self.path.exists():
+        if not self.exists():
             return None
         _hash_md5 = md5()
         with open(self.absolute(), "rb") as f:
@@ -206,27 +196,41 @@ class File(object):
 
 class Directory(object):
     def __init__(self, dirpath: str):
-        self.dirpath: str = os.path.abspath(dirpath)
-        self.path: Path = Path(self.dirpath)
+        self.__abs_path: str = os.path.abspath(dirpath)
+
+    def absolute(self) -> str:
+        return self.__abs_path
 
     def __eq__(self, value):
         if not isinstance(value, Directory):
-            return NotImplemented
+            return ValueError()
         return self.absolute() == value.absolute()
 
     def __hash__(self):
         return self.absolute().__hash__()
 
-    def iterpaths(self) -> list[Path]:
-        return list(self.path.rglob('*'))
+    def get_files(self) -> list[str]:
+        """
+        Retorna a lista de diretórios e sub pastas.
+        """
+        path_list = []
+        # os.walk percorre a árvore de diretórios recursivamente
+        for root, dirs, files in os.walk(self.absolute()):
+            # Adiciona os diretórios encontrados
+            for name in dirs:
+                path_list.append(os.path.join(root, name))
+            # Adiciona os arquivos encontrados
+            for name in files:
+                path_list.append(os.path.join(root, name))
+        return path_list
 
     def __content_recursive(self) -> list[File]:
-        _paths = self.iterpaths()
-        values = []
-        for p in _paths:
-            if p.is_file():
+        _paths: list[str] = self.get_files()
+        values: list[File] = []
+        for file_path in _paths:
+            if os.path.isfile(file_path):
                 values.append(
-                    File(os.path.abspath(p.absolute()))
+                    File(os.path.abspath(file_path))
                 )
         return values
 
@@ -247,13 +251,16 @@ class Directory(object):
         return self.__content_no_recursive()
 
     def content_dirs(self, recursive: bool = True) -> list[Directory]:
+        """
+        retorna uma lista de diretórios
+        """
         values: list[Directory] = []
         if recursive:
-            _paths = self.iterpaths()
+            _paths = self.get_files()
             for p in _paths:
-                if p.is_dir():
+                if os.path.isdir(p):
                     values.append(
-                        Directory(os.path.abspath(p.absolute()))
+                        Directory(os.path.abspath(p))
                     )
         else:
             _paths = os.listdir(self.absolute())
@@ -274,9 +281,6 @@ class Directory(object):
         except:
             pass
 
-    def absolute(self) -> str:
-        return self.dirpath
-
     def concat(self, d: str, create: bool = False) -> Directory:
         if create:
             if not os.path.exists(os.path.join(self.absolute(), d)):
@@ -288,7 +292,7 @@ class Directory(object):
 
     def parent(self) -> Directory:
         return Directory(
-            os.path.abspath(self.path.parent)
+            os.path.abspath(os.path.dirname(self.absolute()))
         )
 
     def join_file(self, name: str) -> File:
@@ -305,7 +309,7 @@ class InputFiles(object):
     def __init__(self, d: Directory, *, maxFiles: int = 5000):
         if not isinstance(d, Directory):
             raise ValueError(f'{__class__.__name__}\nUse: Directory(), não {type(d)}')
-        self.input_dir: Directory = d
+        self._input_dir: Directory = d
         self.maxFiles: int = maxFiles
 
     @property
@@ -326,31 +330,34 @@ class InputFiles(object):
         """
         content_files: list[File] = []
         count: int = 0
-        paths = self.input_dir.iterpaths()
+        paths: list[str] = self._input_dir.get_files()
+        file: str
         for file in paths:
-            if not file.is_file():
+            if not os.path.isfile(file):
                 continue
-            if infile in os.path.abspath(file.absolute()):
+            if infile in os.path.abspath(file):
                 content_files.append(
-                    File(os.path.abspath(file.absolute()))
+                    File(os.path.abspath(file))
                 )
                 count += 1
             if count >= self.maxFiles:
                 break
+        if sort:
+            content_files.sort()
         return content_files
 
     def __get_files_recursive(self, *, file_type: LibraryDocs, sort: bool) -> list[File]:
         #
-        _paths: list[Path] = self.input_dir.iterpaths()
-        _all_files = []
+        _paths: list[str] = self._input_dir.get_files()
+        _all_files: list[File] = list()
         count: int = 0
         if file_type == LibraryDocs.ALL:
             # Todos os tipos de arquivos
             for p in _paths:
-                if not p.is_file():
+                if not os.path.isfile(p):
                     continue
                 _all_files.append(
-                    File(os.path.abspath(p.absolute()))
+                    File(os.path.abspath(p))
                 )
                 count += 1
                 if count >= self.maxFiles:
@@ -358,13 +365,15 @@ class InputFiles(object):
         else:
             # Arquivos especificados em LibraryDocs
             for p in _paths:
-                if not p.is_file():
+                if not os.path.isfile(p):
                     continue
-                if (p.suffix is None) or (p.suffix == ''):
+
+                file_suffix = os.path.splitext(p)[1]
+                if (file_suffix is None) or (file_suffix == ''):
                     continue
-                if p.suffix in file_type.value:
+                if file_suffix in file_type.value:
                     _all_files.append(
-                        File(os.path.abspath(p.absolute()))
+                        File(os.path.abspath(p))
                     )
                     count += 1
                 if count >= self.maxFiles:
@@ -374,7 +383,7 @@ class InputFiles(object):
         return _all_files
 
     def __get_files_no_recursive(self, *, file_type: LibraryDocs, sort: bool) -> list[File]:
-        _content_files: list[File] = self.input_dir.content_files(recursive=False)
+        _content_files: list[File] = self._input_dir.content_files(recursive=False)
         _all_files: list[File] = []
         count: int = 0
 
@@ -498,7 +507,12 @@ class UserFileSystem(object):
         Diretórios comuns para cache e configurações de usuário.
     """
 
-    def __init__(self, base_home: Directory = Directory(os.path.abspath(Path().home()))):
+    def __init__(self, base_home: Directory = None):
+        if base_home is None:
+           base_home = os.path.expanduser("~")
+        # Tenta pegar a HOME (Unix), se não existir, pega USERPROFILE (Windows)
+        #base_home = os.environ.get('HOME') or os.environ.get('USERPROFILE')
+        self.baseHome = base_home
         self.baseHome: Directory = base_home
         self.userDownloads: Directory = self.baseHome.concat('Downloads', create=True)
         self.userVarDir: Directory = self.baseHome.concat('var', create=True)
