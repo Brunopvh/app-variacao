@@ -572,11 +572,11 @@ class UserAppDir(object):
     def __init__(self, appname: str, *, user_file_system: UserFileSystem = UserFileSystem()):
         self.appname = appname
         self.userFileSystem: UserFileSystem = user_file_system
-        self.workspaceDirApp = self.userFileSystem.get_user_downloads().concat(self.appname, create=True)
-        self.installDir = self.userFileSystem.get_user_dir_var().concat('opt').concat(self.appname, create=True)
+        self.workspaceDirApp = self.userFileSystem.get_user_downloads().concat(self.appname, create=False)
+        self.installDir = self.userFileSystem.get_user_dir_var().concat('opt').concat(self.appname, create=False)
 
     def cache_dir_app(self) -> Directory:
-        return self.userFileSystem.cache_dir().concat(self.appname, create=True)
+        return self.userFileSystem.cache_dir().concat(self.appname, create=False)
 
     def config_dir_app(self) -> Directory:
-        return self.userFileSystem.config_dir().concat(self.appname, create=True)
+        return self.userFileSystem.config_dir().concat(self.appname, create=False)

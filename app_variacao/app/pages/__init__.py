@@ -33,17 +33,3 @@ class HomePage(BasePage):
         self.lb1.pack(padx=2, pady=2)
         self.btn_variacao.pack(padx=2, pady=2)
         self.pack(expand=True, fill='both', padx=2, pady=1)
-
-
-class AppVariacao(MyApp):
-
-    def __init__(self):
-        super().__init__()
-
-        self.main_page = HomePage(self)
-        self.main_page.set_page_name('HOME')
-        self.main_page.set_page_route('/home')
-        self.add_page(self.main_page)
-        self.add_page(PageVariacao(self))
-
-

@@ -1,24 +1,44 @@
 from __future__ import annotations
+from enum import StrEnum
+import json
 from typing import Any
-from app_variacao.types.array import ArrayList
-from app_variacao.ui.core.core_types import CoreDict
+from app_variacao.types.array import ArrayList, BaseDict
 from app_variacao.util import (
-    File, Directory, EnumDocFiles, ContentFiles, UserFileSystem
+    File, Directory, EnumDocFiles, ContentFiles, UserFileSystem, UserAppDir
 )
 from app_variacao.soup_files import JsonConvert, JsonData
 from tkinter import filedialog
 import os.path
 
+_app_dir = UserAppDir('app-variacao')
 
-class PreferencesFileDialog(CoreDict):
+
+class EnumPrefs(StrEnum):
+
+    PREFS_FILE_DIALOG = 'prefs.filedialog'
+    PREFS_USER = 'prefs.user'
+    ALL = 'ALL'
+
+
+class PreferencesFileDialog(BaseDict):
 
     default_keys = [
         'initial_input_dir',
         'initial_output_dir',
     ]
+    _instance_prefs = None  # Singleton
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance_prefs is None:
+            cls._instance_prefs = super(PreferencesFileDialog, cls).__new__(cls)
+        return cls._instance_prefs
 
     def __init__(self, values: dict = None, *, user_fs: UserFileSystem = UserFileSystem()) -> None:
         super().__init__(values)
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+        self._initialized = True
+
         self._user_fs: UserFileSystem = user_fs
         if not 'initial_input_dir' in self.keys():
             self['initial_input_dir'] = self._user_fs.get_user_downloads()
@@ -52,6 +72,22 @@ class PreferencesFileDialog(CoreDict):
     def create_from_json(cls, file_json: File) -> PreferencesFileDialog:
         _data = JsonConvert.from_file(file_json)
         return cls(_data.to_json_data().to_dict())
+
+
+class PreferencesUser(BaseDict):
+
+    _instance_prefs = None  # Singleton
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance_prefs is None:
+            cls._instance_prefs = super(PreferencesUser, cls).__new__(cls)
+        return cls._instance_prefs
+
+    def __init__(self, values: dict = None) -> None:
+        super().__init__(values)
+        if hasattr(self, '_initialized') and self._initialized:
+            return
+        self._initialized = True
 
 
 class AppFileDialog(object):
@@ -208,20 +244,27 @@ class AppFileDialog(object):
         return File(dir_path)
 
 
-class ModelVariacao(CoreDict):
+class ModelVariacao(BaseDict):
 
     def __init__(self, values: dict = None) -> None:
         super().__init__(values)
+        self.__file_config: File | None = None
 
 
-class ModelPopUpFiles(CoreDict):
+class ModelPopUpFiles(BaseDict):
 
-    def __init__(self, values: dict = None) -> None:
+    def __init__(self, values: dict = None, *, prefs_file_dialog: dict[str, str] = None) -> None:
         super().__init__(values)
-        self._file_dialog = AppFileDialog()
+        if prefs_file_dialog is None:
+            prefs_file_dialog = {}
+        self._file_dialog = AppFileDialog(
+            PreferencesFileDialog(prefs_file_dialog)
+        )
+
+    def get_prefs_file_dialog(self) -> PreferencesFileDialog:
+        return self._file_dialog.prefs
 
     def select_file_disk(self, f_type: EnumDocFiles) -> File | None:
-        print(f'{__class__.__name__} chamando ... {f_type}')
         _f = self._file_dialog.open_filename(f_type)
         return None if _f is None else File(_f)
 
@@ -237,3 +280,112 @@ class ModelPopUpFiles(CoreDict):
     def select_folder(self) -> Directory | None:
         _folder = self._file_dialog.open_folder()
         return None if _folder is None else Directory(_folder)
+
+
+class ModelExportJson(ModelVariacao):
+
+    def __init__(self, values: dict = None, *, file_json: File) -> None:
+        super().__init__(values)
+        self.__file_json = file_json
+
+    def get_file_json(self) -> File:
+        return self.__file_json
+
+    def set_file_json(self, f: File):
+        self.__file_json = f
+
+    def read_file_json(self) -> BaseDict | None:
+        try:
+            _data = JsonConvert.from_file(self.get_file_json())
+        except Exception as err:
+            print(f'{__class__.__name__} Erro: {err}')
+            return None
+        else:
+            return BaseDict(_data.to_json_data().to_dict())
+
+    def save_data(self, data: dict) -> None:
+        """
+        Salva um arquivo JSON no disco
+        """
+        try:
+            conv = JsonConvert.from_dict(data)
+            conv.to_json_data().to_file(self.get_file_json())
+        except json.decoder.JSONDecodeError:
+            print(f'{__class__.__name__} Falha: ao tentar converter JSON {self}')
+        except Exception as err:
+            print(f'{__class__.__name__} Falha: {err}')
+
+
+class ModelAppConfig(ModelVariacao):
+
+    def __init__(self, values: dict = None) -> None:
+        super().__init__(values)
+        self._dir_config = _app_dir.config_dir_app()
+        self._dir_config.mkdir()
+        self._export_json = ModelExportJson(
+            file_json=self._dir_config.join_file('app-variacao.json')
+        )
+
+    def get_file_config(self) -> File:
+        return self._export_json.get_file_json()
+
+    def load_all_prefs(self) -> BaseDict:
+        try:
+            _data: BaseDict = self._export_json.read_file_json()
+        except Exception as err:
+            print(f'{__class__.__name__} Erro: {err}')
+            return BaseDict()
+        else:
+            return _data
+
+    def save_all_prefs(self, data: dict[str, dict]) -> None:
+        try:
+            _app_dir.config_dir_app().mkdir()
+            all_prefs = self.load_all_prefs()
+            if all_prefs is None:
+                return None
+        except Exception as err:
+            print(f'{__class__.__name__} Erro: {err}')
+        else:
+            for _k in data.keys():
+                if _k == EnumPrefs.PREFS_FILE_DIALOG.value:
+                    all_prefs[_k] = data[_k]
+                elif _k == EnumPrefs.PREFS_USER.value:
+                    all_prefs[_k] = data[_k]
+            self._export_json.save_data(all_prefs)
+
+    def load_prefs_user(self) -> PreferencesUser:
+        prefs = PreferencesUser()
+        prefs['work_dir'] = _app_dir.workspaceDirApp.absolute()
+        all_prefs = self.load_all_prefs()
+        if EnumPrefs.PREFS_USER.value in all_prefs.keys():
+            for _k in all_prefs[EnumPrefs.PREFS_USER.value].keys():
+                prefs[_k] = all_prefs[EnumPrefs.PREFS_USER.value][_k]
+        return prefs
+
+    def save_prefs_user(self, prefs: dict):
+        _new = dict()
+        _new[EnumPrefs.PREFS_USER.value] = prefs
+        self.save_all_prefs(_new)
+
+    def load_prefs_file_dialog(self) -> PreferencesFileDialog:
+        """
+        Ler os dados do arquivo de configuração Json e obter as configurações
+        para diálogo de arquivos.
+        """
+        _data: dict = self.load_all_prefs()
+        _prefs = PreferencesFileDialog()
+        if _data is None:
+            return _prefs
+        if not EnumPrefs.PREFS_FILE_DIALOG.value in _data.keys():
+            return _prefs
+
+        for _k in _data[EnumPrefs.PREFS_FILE_DIALOG.value].keys():
+            if _k == EnumPrefs.PREFS_FILE_DIALOG.value:
+                _prefs[_k] = _data[_k]
+        return _prefs
+
+    def save_prefs_file_dialog(self, prefs: dict) -> None:
+        _new = dict()
+        _new[EnumPrefs.PREFS_FILE_DIALOG.value] = prefs
+        self.save_all_prefs(_new)
