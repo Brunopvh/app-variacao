@@ -1,5 +1,5 @@
 from .myapp import AppVariacao
-from app_variacao.ui.core import run_app
+from app_variacao.app.ui.core import run_app
 
 
 

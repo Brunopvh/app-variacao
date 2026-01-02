@@ -1,9 +1,44 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any, Generic, TypeVar
 
 T = TypeVar('T')
+
+
+class EnumStyles(Enum):
+
+    # Temas da janela principal
+    WINDOW_DARK = 'DARK'
+    WINDOW_LIGHT = 'LIGHT'
+    WINDOW_LIGHT_PURPLE = 'LIGHT_PURPLE'
+
+    # Tema dos Frames
+    FRAME_DARK = 'Black.TFrame'
+    FRAME_LIGHT = 'LightFrame.TFrame'
+    FRAME_DARK_PURPLE = 'DarkPurple.TFrame'
+    LIGHT_PURPLE = 'LightPurple.TFrame'
+    GRAY = 'CinzaFrame.TFrame'
+
+    # Tama dos botões
+    BUTTON_PURPLE_LIGHT = 'Custom.TButtonPurpleLight'
+    BUTTON_GREEN = 'Custom.TButtonGreen'
+
+    # Tema da barra de progresso
+    PBAR_GREEN = "Custom.Horizontal.TProgressbar"
+    PBAR_PURPLE_LIGHT = "Thin.Horizontal.TProgressbar"
+    PBAR_PURPLE = "Purple.Horizontal.TProgressbar"
+
+    # Temas Para Labels
+    LABEL_PURPLE_LIGHT = "LargeFont.TLabel"
+    LABEL_DEFAULT = "BoldLargeFont.TLabel"  # Custom.TLabel
+
+
+class EnumMessages(Enum):
+
+    MSG_UPDATE_STYLE = 'update_style'
+    MSG_PROCESS_FINISHED = 'process_finished'
 
 
 #=================================================================#
@@ -39,11 +74,25 @@ class CoreDict(dict[str, T], Generic[T]):
 
 class MessageNotification(CoreDict):
 
-    def __init__(self, values: dict[str, T] = None) -> None:
+    def __init__(self, values: dict[str, T] = None, *, provider: Any, message_type: EnumMessages) -> None:
         super().__init__(values)
+        self['provider'] = provider
+        self['message_type'] = message_type
 
     def __repr__(self):
-        return f'{self.__class__.__name__}(\n{super().__repr__()}\n)'
+        return f'{self.__class__.__name__}()\n{self.values()}'
+
+    def get_message_type(self) -> EnumMessages:
+        return self['message_type']
+
+    def set_message_type(self, n: EnumMessages) -> None:
+        self['message_type'] = n
+
+    def get_provider(self) -> Any:
+        return self['provider']
+
+    def set_provider(self, p: Any) -> None:
+        self['provider'] = p
 
     def get_first(self) -> T:
         _k = self.keys()[0]
@@ -65,17 +114,10 @@ class MessageNotification(CoreDict):
 # Sujeito notificador
 class AbstractNotifyProvider(ABC):
     def __init__(self):
-        self.observer_list: list[AbstractObserver] = []
-        self._name = None
-
-    def get_name(self) -> str:
-        return self._name
-
-    def set_name(self, name: str) -> None:
-        return self._name
+        self.observer_list: set[AbstractObserver] = set()
 
     def add_observer(self, observer: AbstractObserver):
-        self.observer_list.append(observer)
+        self.observer_list.add(observer)
 
     def remove_observer(self, observer: AbstractObserver):
         if len(self.observer_list) < 1:
@@ -86,7 +128,7 @@ class AbstractNotifyProvider(ABC):
         self.observer_list.clear()
 
     @abstractmethod
-    def send_notify(self, _obj: MessageNotification[T] = None):
+    def send_notify(self, msg: MessageNotification):
         pass
 
 
