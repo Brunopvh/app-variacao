@@ -2,7 +2,7 @@ from __future__ import annotations
 from tkinter import ttk
 import tkinter as tk
 from app_variacao.soup_files import File
-from app_variacao.ui.core import (
+from app_variacao.app.ui.core import (
     BasePage, MyApp, ContainerH,
 )
 from app_variacao.app.controllers import ControllerPopUpFiles

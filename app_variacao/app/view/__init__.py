@@ -1,5 +1,5 @@
-from app_variacao.ui.core import (
-    BasePage, MyApp, ContainerH, EnumThemes
+from app_variacao.app.ui.core import (
+    BasePage, MyApp, EnumThemes
 )
 from .page_variacao import PageVariacao
 from tkinter import ttk

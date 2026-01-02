@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 from typing import Callable, Any
-from app_variacao.soup_files import File, EnumDocFiles
-from app_variacao.app.controllers import ControllerPopUpFiles, ControllerAppConfig, EnumPrefs
-from app_variacao.ui.core.core_widgets import (
-    ObserverWidget, NotifyWidget, MyApp, EnumThemes, AppStyles
+from app_variacao.app.controllers import ControllerPopUpFiles, ControllerAppConfig
+from app_variacao.app.ui.core import (
+    MyApp, EnumThemes
 )
 import tkinter as tk
 
