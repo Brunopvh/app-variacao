@@ -152,6 +152,36 @@ class AppStyles(object):
         )
 
         # ==============================================================#
+        # Estilo para os botões - Roxo Escuro
+        # ==============================================================#
+        self.styleButtonPurpleDark = ttk.Style(self.root_window)
+        self.styleButtonPurpleDark.theme_use("default")
+        self.styleButtonPurpleDark.layout(
+            "Custom.TButtonPurpleDark",
+            self.styleButtonPurpleDark.layout("TButton")
+        )
+        # Define o estilo do botão roxo escuro
+        self.styleButtonPurpleDark.configure(
+            "Custom.TButtonPurpleDark",
+            foreground="white",
+            background="#6247AA",  # Roxo escuro
+            borderwidth=1,
+            focusthickness=3,
+            focuscolor='none',
+            anchor='center',
+            padding=self.PADDING_BTN,
+            width=self.WIDTH_BTN,
+        )
+        # Mapeamento de cores para interação
+        self.styleButtonPurpleDark.map(
+            "Custom.TButtonPurpleDark",
+            background=[
+                ("active", "#503990"),  # Tom um pouco mais escuro quando passa o mouse
+                ("pressed", "#402D73")  # Tom bem mais escuro quando clica
+            ]
+        )
+
+        # ==============================================================#
         # Estilo para Labels
         # ==============================================================#
         self.styleLabelPurple = ttk.Style(self.root_window)
@@ -210,7 +240,9 @@ class MappingStyles(CoreDict[ValueStyle]):
     """
 
     _instance_map_styles = None
-    _themes_keys: tuple[str] = ('buttons', 'labels', 'frames', 'pbar', 'app', 'last_update')
+    styles_keys: tuple[str] = (
+        'buttons', 'labels', 'frames', 'pbar', 'app', 'menu_bar',
+    )
 
     def __new__(cls, *args, **kwargs):
         if cls._instance_map_styles is None:
@@ -265,6 +297,8 @@ class MappingStyles(CoreDict[ValueStyle]):
                     final[key_style] = EnumStyles.BUTTON_PURPLE_LIGHT
                 elif value_style == EnumStyles.BUTTON_GREEN.value:
                     final[key_style] = EnumStyles.BUTTON_GREEN
+                elif value_style == EnumStyles.BUTTON_PURPLE_DARK.value:
+                    final[key_style] = EnumStyles.BUTTON_PURPLE_DARK
             elif key_style == 'labels':
                 if value_style == EnumStyles.LABEL_DEFAULT.value:
                     final[key_style] = EnumStyles.LABEL_DEFAULT
@@ -277,6 +311,10 @@ class MappingStyles(CoreDict[ValueStyle]):
                     final[key_style] = EnumStyles.FRAME_LIGHT
                 elif value_style == EnumStyles.FRAME_PURPLE_DARK.value:
                     final[key_style] = EnumStyles.FRAME_PURPLE_DARK
+                elif value_style == EnumStyles.FRAME_DARK_GRAY.value:
+                    final[key_style] = EnumStyles.FRAME_DARK_GRAY
+                elif value_style == EnumStyles.FRAME_ORANGE_DARK.value:
+                    final[key_style] = EnumStyles.FRAME_ORANGE_DARK
             elif key_style == 'pbar':
                 if value_style == EnumStyles.PBAR_PURPLE.value:
                     final[key_style] = EnumStyles.PBAR_PURPLE
@@ -292,6 +330,8 @@ class MappingStyles(CoreDict[ValueStyle]):
                     final[key_style] = EnumStyles.TOPBAR_LIGHT
                 elif value_style == EnumStyles.TOPBAR_PURPLE_LIGHT.value:
                     final[key_style] = EnumStyles.TOPBAR_PURPLE_LIGHT
+                elif value_style == EnumStyles.TOPBAR_PURPLE_DARK.value:
+                    final[key_style] = EnumStyles.TOPBAR_PURPLE_DARK
         return final
 
     @classmethod
@@ -583,7 +623,8 @@ class BasePage(ttk.Frame):
             for lb in self._list_labels:
                 lb.configure(style=app_theme.get_style_labels().value)
         elif app_theme.get_last_update() == "app":
-            self.update_page_theme(app_theme.get_style_app())
+            #self.update_page_theme(app_theme.get_style_app())
+            pass
         else:
             print(f'DEBUG: {__class__.__name__} Nenhum tema foi alterado')
 

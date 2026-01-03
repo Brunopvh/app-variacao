@@ -112,6 +112,11 @@ class MenuBar(BaseView):
             label="Tema Roxo Claro",
             command=lambda: self.set_theme_menu_bar(EnumStyles.TOPBAR_PURPLE_LIGHT)
         )
+        # Sub sessão para o tema roxo escuro.
+        self.menu_option_style_top_bar.add_command(
+            label="Tema Roxo escuro",
+            command=lambda: self.set_theme_menu_bar(EnumStyles.TOPBAR_PURPLE_DARK)
+        )
 
         # -------------------------------------------------------------#
         # Submenu para temas do app
@@ -146,7 +151,9 @@ class MenuBar(BaseView):
             command=lambda: self.update_theme_frames(EnumStyles.FRAME_ORANGE_DARK),
         )
 
+        # -------------------------------------------------------------#
         # Submenu para temas dos botões
+        # -------------------------------------------------------------#
         self.menu_option_style_buttons = tk.Menu(self.style_menu, tearoff=0)
         self.menu_option_style_buttons.add_command(
             label="Botões verdes",
@@ -155,6 +162,10 @@ class MenuBar(BaseView):
         self.menu_option_style_buttons.add_command(
             label="Botões Roxo claro",
             command=lambda: self.set_theme_buttons(EnumStyles.BUTTON_PURPLE_LIGHT),
+        )
+        self.menu_option_style_buttons.add_command(
+            label="Botões Roxo escuro",
+            command=lambda: self.set_theme_buttons(EnumStyles.BUTTON_PURPLE_DARK),
         )
 
         # Adicionar os submenus à barra de menu principal
@@ -215,6 +226,12 @@ class MenuBar(BaseView):
             fg_color = "white"  # Texto branco para contraste
             active_bg_color = "#a070d6"  # Roxo um pouco mais escuro para hover
             active_fg_color = "white"  # Texto branco também no hover
+        elif new == EnumStyles.TOPBAR_PURPLE_DARK:
+            # barra com tema roxo escuro
+            bg_color = "#6247AA"  # Roxo escuro profundo
+            fg_color = "white"  # Texto branco para alto contraste
+            active_bg_color = "#503990"  # Tom mais fechado para o hover
+            active_fg_color = "white"
         elif new == EnumStyles.TOPBAR_DARK:
             bg_color = "gray15"
             fg_color = "white"
@@ -237,8 +254,8 @@ class MenuBar(BaseView):
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def set_theme_buttons(self, new: EnumStyles):
-        _mapping = self.myapp.get_styles_mapping()
-        _mapping.set_style_buttons(new)
+        self.myapp.get_styles_mapping().set_style_buttons(new)
+        self.myapp.send_notify_listeners(self._message_top_bar)
 
     def change_work_dir(self):
         _popup = ControllerPopUpFiles()

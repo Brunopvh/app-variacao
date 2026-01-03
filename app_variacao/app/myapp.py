@@ -2,6 +2,7 @@ from app_variacao.app.ui.core import (
     MyApp, MappingStyles, MessageNotification
 )
 from app_variacao.app.ui.core.core_types import EnumMessages
+from app_variacao.app.ui.core.core_pages import MappingStyles
 from app_variacao.app.view import PageVariacao, HomePage
 from app_variacao.app.view.menu_bar import MenuBar
 from app_variacao.app.controllers import ControllerPrefs
@@ -24,18 +25,14 @@ class AppVariacao(MyApp):
         )
         self.menu_bar = MenuBar(app=self)
 
-        if 'app_styles' in self.controller_prefs.get_prefs().keys():
-            final: dict = MappingStyles.format_dict(
-                self.controller_prefs.get_prefs()['app_styles'],
-            )
-            for key, value in final.items():
-                self.controller_prefs.get_prefs()[key] = value
-
-            self.get_styles_mapping()['last_update'] = 'frames'
-            msg = MessageNotification(
-                message_type=EnumMessages.MSG_UPDATE_STYLE,
-                provider=self.get_styles_mapping(),
-            )
+        # Alterar os temas dos widgets conforme as configurações.
+        map_styles = self.controller_prefs.get_prefs().get_app_styles()
+        msg = MessageNotification(
+            message_type=EnumMessages.MSG_UPDATE_STYLE,
+            provider=map_styles,
+        )
+        for key_style in MappingStyles.styles_keys:
+            map_styles.set_last_update(key_style)
             self.send_notify_listeners(msg)
 
     def save_configs(self) -> None:

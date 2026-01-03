@@ -17,7 +17,8 @@ class EnumStyles(Enum):
     # Temas da janela principal
     TOPBAR_DARK = 'TOP_BAR_DARK'
     TOPBAR_LIGHT = 'TOP_BAR_LIGHT'
-    TOPBAR_PURPLE_LIGHT = 'TOP_BAR_LIGHT_PURPLE'
+    TOPBAR_PURPLE_LIGHT = 'TOP_BAR_PURPLE_LIGHT'
+    TOPBAR_PURPLE_DARK = 'TOP_BAR_PURPLE_DARK'
 
     # Tema dos Frames
     FRAME_DARK = 'Black.TFrame'  # OK
@@ -31,6 +32,7 @@ class EnumStyles(Enum):
     # Tama dos botões
     BUTTON_PURPLE_LIGHT = 'Custom.TButtonPurpleLight'  # OK
     BUTTON_GREEN = 'Custom.TButtonGreen'  # OK
+    BUTTON_PURPLE_DARK = 'Custom.TButtonPurpleDark'
 
     # Tema da barra de progresso
     PBAR_GREEN = "Custom.Horizontal.TProgressbar"
