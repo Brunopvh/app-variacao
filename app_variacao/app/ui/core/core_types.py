@@ -14,6 +14,11 @@ class EnumStyles(Enum):
     WINDOW_LIGHT = 'LIGHT'
     WINDOW_LIGHT_PURPLE = 'LIGHT_PURPLE'
 
+    # Temas da janela principal
+    TOPBAR_DARK = 'TOP_BAR_DARK'
+    TOPBAR_LIGHT = 'TOP_BAR_LIGHT'
+    TOPBAR_PURPLE_LIGHT = 'TOP_BAR_LIGHT_PURPLE'
+
     # Tema dos Frames
     FRAME_DARK = 'Black.TFrame'  # OK
     FRAME_DARK_GRAY = 'DarkGray.TFrame'

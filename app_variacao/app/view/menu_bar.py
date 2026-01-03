@@ -38,19 +38,8 @@ class MenuBar(BaseView):
         # -------------------------------------------------------------#
         # Criar a barra superior
         # -------------------------------------------------------------#
-        # Iniciar a barra com tema dark
-        bg_color = "gray15"
-        fg_color = "white"
-        active_bg_color = "gray30"
-        active_fg_color = "white"
         # Criar a barra superior principal
         self.master_menu_bar: tk.Menu = tk.Menu(self.myapp.get_window())
-        self.master_menu_bar.config(
-            bg=bg_color,
-            fg=fg_color,
-            activebackground=active_bg_color,
-            activeforeground=active_fg_color
-        )
         self.myapp.get_window().config(menu=self.master_menu_bar)
 
         # -------------------------------------------------------------#
@@ -97,26 +86,31 @@ class MenuBar(BaseView):
         # -------------------------------------------------------------#
         # Menu Estilo (Alterar os temas/estilos do app)
         # -------------------------------------------------------------#
-        # Menu de tema principal
+        # Menu Estilo
         self.style_menu = tk.Menu(self.master_menu_bar, tearoff=0)
         self.master_menu_bar.add_cascade(label="Tema", menu=self.style_menu)
+
+        # Iniciar o tema
+        self.set_theme_menu_bar(
+            self._controller_conf.get_prefs().get_app_styles().get_style_menu_bar()
+        )
 
         # Submenu para alterar o estilo da barra/menu.
         self.menu_option_style_top_bar: tk.Menu = tk.Menu(self.style_menu, tearoff=0)
         # Sub sessão para o tema claro.
         self.menu_option_style_top_bar.add_command(
             label="Tema Claro",
-            command=lambda: self.set_theme_menu_bar(EnumStyles.FRAME_LIGHT)
+            command=lambda: self.set_theme_menu_bar(EnumStyles.TOPBAR_LIGHT)
         )
         # Sub sessão para o tema escuro.
         self.menu_option_style_top_bar.add_command(
             label="Tema Escuro",
-            command=lambda: self.set_theme_menu_bar(EnumStyles.FRAME_DARK)
+            command=lambda: self.set_theme_menu_bar(EnumStyles.TOPBAR_DARK)
         )
         # Sub sessão para o tema roxo claro.
         self.menu_option_style_top_bar.add_command(
             label="Tema Roxo Claro",
-            command=lambda: self.set_theme_menu_bar(EnumStyles.FRAME_PURPLE_LIGHT)
+            command=lambda: self.set_theme_menu_bar(EnumStyles.TOPBAR_PURPLE_LIGHT)
         )
 
         # -------------------------------------------------------------#
@@ -182,7 +176,7 @@ class MenuBar(BaseView):
         )
 
         self._message_top_bar = MessageNotification(
-            provider=self.myapp.get_themes_mapping(),
+            provider=self.myapp.get_styles_mapping(),
             message_type=EnumMessages.MSG_UPDATE_STYLE,
         )
 
@@ -210,27 +204,27 @@ class MenuBar(BaseView):
         """
         Alterar o tema da barra superior
         """
-        bg_color = "gray15"
-        fg_color = "white"
-        active_bg_color = "gray30"
-        active_fg_color = "white"
-
-        if new == EnumStyles.FRAME_LIGHT:
+        if new == EnumStyles.TOPBAR_LIGHT:
             bg_color = "white"
             fg_color = "black"
             active_bg_color = "lightgray"
             active_fg_color = "black"
-        elif new == EnumStyles.FRAME_PURPLE_LIGHT:
+        elif new == EnumStyles.TOPBAR_PURPLE_LIGHT:
             # barra com tema roxo claro
             bg_color = "#B388EB"  # Roxo claro (tom pastel)
             fg_color = "white"  # Texto branco para contraste
             active_bg_color = "#a070d6"  # Roxo um pouco mais escuro para hover
             active_fg_color = "white"  # Texto branco também no hover
-        elif new == EnumStyles.FRAME_DARK:
-            pass
+        elif new == EnumStyles.TOPBAR_DARK:
+            bg_color = "gray15"
+            fg_color = "white"
+            active_bg_color = "gray30"
+            active_fg_color = "white"
         else:
+            print(f'{__class__.__name__} Tema não alterado | {print(new)} |')
             return
 
+        self.myapp.get_styles_mapping().set_style_menu_bar(new)
         self.master_menu_bar.config(
             bg=bg_color,
             fg=fg_color,
@@ -239,11 +233,11 @@ class MenuBar(BaseView):
         )
 
     def update_theme_frames(self, new: EnumStyles):
-        self.myapp.get_themes_mapping().set_style_frames(new)
+        self.myapp.get_styles_mapping().set_style_frames(new)
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def set_theme_buttons(self, new: EnumStyles):
-        _mapping = self.myapp.get_themes_mapping()
+        _mapping = self.myapp.get_styles_mapping()
         _mapping.set_style_buttons(new)
 
     def change_work_dir(self):

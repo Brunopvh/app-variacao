@@ -1,12 +1,13 @@
 from __future__ import annotations
-from enum import StrEnum
 import json
 from typing import Any
 from app_variacao.types.array import ArrayList, BaseDict
+from app_variacao.soup_files import JsonConvert
+from app_variacao.app.ui.core.core_pages import MappingStyles
 from app_variacao.util import (
     File, Directory, EnumDocFiles, UserAppDir
 )
-from app_variacao.soup_files import JsonConvert
+
 from tkinter import filedialog
 import os.path
 
@@ -14,6 +15,9 @@ _app_dir = UserAppDir('app-variacao')
 
 
 class UserPreferences(BaseDict):
+    """
+    Preferências do APP
+    """
 
     _instance_prefs = None  # Singleton
 
@@ -47,14 +51,55 @@ class UserPreferences(BaseDict):
             raise TypeError('initial_input_dir must be a Directory')
         self['initial_input_dir'] = new
 
+    def set_app_styles(self, styles: MappingStyles):
+        if not isinstance(styles, MappingStyles):
+            raise ValueError(f'{__class__.__name__} styles deve ser MappingStyles(), não {type(styles)}')
+        self['app_styles'] = styles
+
+    def get_app_styles(self) -> MappingStyles:
+        return self['app_styles']
+
     def to_dict(self) -> dict[str, Any]:
         data = {}
         for k, v in self.items():
+            # métodos absolute() devem ser salvos como strings.
             if hasattr(v, 'absolute'):
                 data[k] = v.absolute()
+            elif k == 'app_styles':
+                pass
             else:
                 data[k] = v
+        data['app_styles'] = self['app_styles'].to_dict()
         return data
+
+    def merge_dict(self, merge: dict[str, Any]) -> None:
+        #fmt_dict = UserPreferences.format_dict(merge)
+        for k, v in merge.items():
+            if k == 'app_styles':
+                self.set_app_styles(v)
+            else:
+                self[k] = v
+
+    @classmethod
+    def format_dict(cls, data: dict[str, Any]) -> dict[str, Any]:
+        final: dict[str, Any] = dict()
+        keys_dirs: tuple = (
+            'initial_output_dir', 'initial_input_dir', 'last_dir', 'work_dir',
+        )
+        for key, value_conf in data.items():
+            if key in keys_dirs:
+                if isinstance(value_conf, str):
+                    final[key] = Directory(value_conf)
+                elif isinstance(value_conf, Directory):
+                    final[key] = value_conf
+            elif key == 'app_styles':
+                fmt_data_styles: dict = MappingStyles.format_dict(value_conf)
+                mapping_styles: MappingStyles = MappingStyles.create_default()
+                mapping_styles.merge_dict(fmt_data_styles)
+                final['app_styles'] = mapping_styles
+            else:
+                final[key] = value_conf
+        return final
 
 
 class ModelPreferences(object):
@@ -72,48 +117,44 @@ class ModelPreferences(object):
             return
         self._initialized_prefs = True
         self.file_prefs: File = _app_dir.config_dir_app().join_file('prefs-variacao.json')
-        self.__prefs = None
+        self._user_prefs: UserPreferences = None
 
     def get_preferences(self) -> UserPreferences:
-        if self.__prefs is None:
-            self.__prefs = self.create_prefs()
-        return self.__prefs
+        if self._user_prefs is None:
+            self._create_prefs()
+        return self._user_prefs
 
     def save_prefs(self):
-        try:
-            _data = JsonConvert.from_dict(self.get_preferences().to_dict())
-            _data.to_json_data().to_file(self.file_prefs)
-        except Exception as e:
-            print(f'DEBUG: {__class__.__name__} {e}')
+        output = JsonConvert.from_dict(self.get_preferences().to_dict())
+        output.to_json_data().to_file(self.file_prefs)
 
-    def load_prefs(self) -> dict[str, Any]:
-        try:
-            return JsonConvert.from_file(self.file_prefs).to_json_data().to_dict()
-        except Exception as e:
-            print(f'{__class__.__name__} load_prefs error: {e}')
-            return dict()
+    def load_file_prefs(self) -> dict[str, Any]:
+        """
+        Ler as configurações do APP a partir de um arquivo JSON no disco.
+        """
+        if not self.file_prefs.exists():
+            raise FileNotFoundError(f'{__class__.__name__}(): Arquivo não encontrado {self.file_prefs}')
+        values_file = JsonConvert.from_file(self.file_prefs)
+        return values_file.to_json_data().to_dict()
 
-    def create_prefs(self) -> UserPreferences:
-        _default_prefs = self.load_prefs()
-        if len(_default_prefs) == 0:
-            _default_prefs['initial_input_dir'] = _app_dir.userFileSystem.get_user_downloads()
-            _default_prefs['initial_output_dir'] = _app_dir.userFileSystem.get_user_downloads()
-            _default_prefs['work_dir'] = _app_dir.workspaceDirApp
-            _default_prefs['last_dir'] = _app_dir.userFileSystem.get_user_downloads()
-        else:
-            dir_keys = ['initial_input_dir', 'initial_output_dir', 'last_dir', 'work_dir']
-            for k, v in _default_prefs.items():
-                if k in dir_keys:
-                    dir_obj = Directory(v)
-                    if k == 'initial_input_dir':
-                        _default_prefs[k] = dir_obj
-                    elif k == 'initial_output_dir':
-                        _default_prefs[k] = dir_obj
-                    else:
-                        _default_prefs[k] = dir_obj
-                else:
-                    _default_prefs[k] = v
-        return UserPreferences(_default_prefs)
+    def _create_prefs(self) -> None:
+        self._user_prefs = UserPreferences()
+        data = {
+            'app_styles': MappingStyles.create_default(),
+            'initial_input_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'last_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'initial_output_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'work_dir': _app_dir.workspaceDirApp,
+        }
+        self._user_prefs.merge_dict(data)
+
+        if self.file_prefs.exists():
+            # Criar preferências a partir do arquivo de configuração
+            print(f'{__class__.__name__} Criando preferências do arquivo: {self.file_prefs.absolute()}')
+            content_file_config: dict[str, Any] = self.load_file_prefs()
+            self._user_prefs.merge_dict(
+                UserPreferences.format_dict(content_file_config)
+            )
 
 
 class AppFileDialog(object):
