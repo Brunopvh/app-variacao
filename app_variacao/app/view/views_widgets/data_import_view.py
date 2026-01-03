@@ -23,10 +23,8 @@ class DataImportConfigView(Container):
         self.row_file = ContainerH(self.main_container)
         self.row_file.pack(fill='x', pady=5)
 
-        self.btn_select = ttk.Button(
-            self.row_file, text="Selecionar Arquivo", command=self._on_select_file
-        )
-        self.btn_select.pack(side='left', padx=5)
+        #self.btn_select = ttk.Button(self.row_file, text="Selecionar Arquivo", command=self.on_select_file)
+        #self.btn_select.pack(side='left', padx=5)
 
         self.lbl_file_path = ttk.Label(self.row_file, text="Nenhum arquivo selecionado", wraplength=400)
         self.lbl_file_path.pack(side='left', padx=5)
@@ -40,7 +38,7 @@ class DataImportConfigView(Container):
         self.var_encoding = tk.StringVar(value="utf-8")
         self.var_sheet_name = tk.StringVar()
 
-    def _on_select_file(self):
+    def on_select_file(self):
         # Chama o seu controller existente
         #f = self.controller_popup.get_file_excel() or self.controller_popup.get_file_csv()
         f = self.controller_popup.get_sheet()
@@ -90,14 +88,19 @@ class DataImportConfigView(Container):
             xl = pd.ExcelFile(self.selected_file.absolute())
             sheets = xl.sheet_names
 
-            # Criar RadioButtons para as abas
-            for sheet in sheets:
-                rb = ttk.Radiobutton(
-                    self.options_container, text=sheet,
-                    variable=self.var_sheet_name, value=sheet
-                )
-                rb.pack(anchor='w', padx=20)
+            # Criar um container horizontal para o label e o combobox
+            container_row_sheet = ContainerH(self.options_container)
+            container_row_sheet.pack(fill='x', pady=2)
+            ttk.Label(container_row_sheet, text="Planilha:").pack(side='left', padx=5)
 
+            # Combobox para as abas
+            comb_sheets = ttk.Combobox(
+                container_row_sheet,
+                textvariable=self.var_sheet_name,
+                values=sheets,
+                state="readonly"  # Impede o usuário de digitar algo que não existe
+            )
+            comb_sheets.pack(side='left', fill='x', expand=True, padx=5)
             if sheets:
                 self.var_sheet_name.set(sheets[0])
         except Exception as e:

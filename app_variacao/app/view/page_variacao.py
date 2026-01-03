@@ -31,9 +31,8 @@ class PageVariacao(BasePage):
         self.btn_sheet_variacao = ttk.Button(
             self.container1,
             text='Selecionar\nPlanilha',
-            command=self.select_sheet,
+            #command=self.load_data_to_view,
             style=EnumStyles.BUTTON_PURPLE_LIGHT.value,
-            #width=25
         )
         self.add_btn(self.btn_sheet_variacao)
 
@@ -50,13 +49,10 @@ class PageVariacao(BasePage):
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
         # =============================================================#
-        self.config_import = DataImportConfigView(self.frame_master)
+        self.config_import: DataImportConfigView = DataImportConfigView(self.frame_master)
+        self.btn_sheet_variacao.configure(command=self.config_import.on_select_file)
         # Botão para processar/ler
-        self.btn_read = ttk.Button(
-            self.frame_master,
-            text="Carregar Dados",
-            command=self.load_data_to_view
-        )
+        self.btn_read = ttk.Button(self.frame_master, text="Carregar Dados", command=self.load_data_to_view)
 
         # =============================================================#
         # Container 3 - Exibição dos dados
