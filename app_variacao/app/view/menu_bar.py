@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Callable, Any, Optional
-from app_variacao.app.controllers import ControllerPopUpFiles, ControllerAppConfig
+from app_variacao.app.controllers import ControllerPopUpFiles, ControllerPrefs
 from app_variacao.app.ui.base_view import BaseView
 from app_variacao.app.ui.core.core_types import EnumStyles, MessageNotification, EnumMessages
 from app_variacao.app.ui.core.core_pages import MyApp
@@ -30,7 +30,7 @@ class MenuBar(BaseView):
         super().__init__()
         self.version = '1.0'
         self.myapp = app
-        self._controller_conf = ControllerAppConfig()
+        self._controller_conf = ControllerPrefs()
         self._add_item_menu: Callable[
             [str, tk.Menu, Optional[str], Optional[Callable]], int
         ] = add_item_menu
@@ -58,13 +58,19 @@ class MenuBar(BaseView):
         # -------------------------------------------------------------#
         self.menu_file: tk.Menu = tk.Menu(self.master_menu_bar, tearoff=0)
         self.master_menu_bar.add_cascade(label="Arquivo", menu=self.menu_file)
+        # Pasta de trabalho
+        self.index_menu_back_page: int = self.add_item_menu(
+            name='Voltar',
+            submenu=self.menu_file,
+            cmd=lambda: self.myapp.get_navigator().pop(),
+        )
         self.index_menu_exit = self.add_item_menu(
             name='Sair',
             submenu=self.menu_file,
             tooltip='Sair do programa',
             cmd=self.myapp.exit_app,
         )
-        self.menu_file.config(background='red')
+        self.menu_file.config(background='gray')
 
         # -------------------------------------------------------------#
         # Menu Configurações
@@ -110,7 +116,7 @@ class MenuBar(BaseView):
         # Sub sessão para o tema roxo claro.
         self.menu_option_style_top_bar.add_command(
             label="Tema Roxo Claro",
-            command=lambda: self.set_theme_menu_bar(EnumStyles.LIGHT_PURPLE)
+            command=lambda: self.set_theme_menu_bar(EnumStyles.FRAME_PURPLE_LIGHT)
         )
 
         # -------------------------------------------------------------#
@@ -118,20 +124,32 @@ class MenuBar(BaseView):
         # -------------------------------------------------------------#
         self.menu_option_style_app = tk.Menu(self.style_menu, tearoff=0)
         self.menu_option_style_app.add_command(
-            label="Tema Claro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_LIGHT),
-        )
-        self.menu_option_style_app.add_command(
             label="Tema Escuro",
             command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK),
         )
         self.menu_option_style_app.add_command(
+            label="Tema Cinza Escuro",
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK_GRAY),
+        )
+        self.menu_option_style_app.add_command(
+            label="Tema Cinza",
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_GRAY),
+        )
+        self.menu_option_style_app.add_command(
+            label="Tema Claro",
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_LIGHT),
+        )
+        self.menu_option_style_app.add_command(
             label="Roxo Escuro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK_PURPLE),
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_PURPLE_DARK),
         )
         self.menu_option_style_app.add_command(
             label="Roxo Claro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK_PURPLE),
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_PURPLE_LIGHT),
+        )
+        self.menu_option_style_app.add_command(
+            label="Laranja",
+            command=lambda: self.update_theme_frames(EnumStyles.FRAME_ORANGE_DARK),
         )
 
         # Submenu para temas dos botões
@@ -202,7 +220,7 @@ class MenuBar(BaseView):
             fg_color = "black"
             active_bg_color = "lightgray"
             active_fg_color = "black"
-        elif new == EnumStyles.LIGHT_PURPLE:
+        elif new == EnumStyles.FRAME_PURPLE_LIGHT:
             # barra com tema roxo claro
             bg_color = "#B388EB"  # Roxo claro (tom pastel)
             fg_color = "white"  # Texto branco para contraste

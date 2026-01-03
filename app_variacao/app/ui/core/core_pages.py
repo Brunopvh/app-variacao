@@ -50,7 +50,7 @@ class AppStyles(object):
         # ==============================================================#
         # Estilo para os Frames
         # ==============================================================#
-        # Estilo "LightFrame"
+        # LightFrame
         self.styleLight = ttk.Style(self.root_window)
         self.styleLight.configure(
             "LightFrame.TFrame",
@@ -58,7 +58,7 @@ class AppStyles(object):
             relief="solid",
             borderwidth=1
         )
-        # Estilo "CinzaFrame.TFrame"
+        # CinzaFrame.TFrame
         self.styleGray = ttk.Style(self.root_window)
         self.styleGray.configure(
             "CinzaFrame.TFrame",
@@ -66,7 +66,7 @@ class AppStyles(object):
             relief="solid",
             borderwidth=1
         )
-        # Estilo "Black.TFrame"
+        # Black.TFrame
         self.styleFrameBlack = ttk.Style(self.root_window)
         self.styleFrameBlack.theme_use("default")
         self.styleFrameBlack.configure(
@@ -94,7 +94,7 @@ class AppStyles(object):
             "DarkGray.TFrame",  # Nome do estilo alterado
             background="#2F4F4F"  # Cinza escuro (DarkSlateGray)
         )
-        # # Estilo para Frame
+        # DarkOrange.TFrame
         self.styleFrameDarkOrange = ttk.Style(self.root_window)
         self.styleFrameDarkOrange.theme_use("default")
         self.styleFrameDarkOrange.configure(
@@ -230,7 +230,7 @@ class MappingStyles(CoreDict[Any]):
             {
                 'buttons': EnumStyles.BUTTON_PURPLE_LIGHT,
                 'labels': EnumStyles.LABEL_PURPLE_LIGHT,
-                'frames': EnumStyles.FRAME_DARK_PURPLE,
+                'frames': EnumStyles.FRAME_PURPLE_DARK,
                 'pbar': EnumStyles.PBAR_PURPLE,
                 'app': EnumStyles.WINDOW_DARK,
                 'last_update': 'frames',
@@ -258,8 +258,8 @@ class MappingStyles(CoreDict[Any]):
                     final[_k] = EnumStyles.FRAME_DARK
                 elif _string_theme == EnumStyles.FRAME_LIGHT.value:
                     final[_k] = EnumStyles.FRAME_LIGHT
-                elif _string_theme == EnumStyles.FRAME_DARK_PURPLE.value:
-                    final[_k] = EnumStyles.FRAME_DARK_PURPLE
+                elif _string_theme == EnumStyles.FRAME_PURPLE_DARK.value:
+                    final[_k] = EnumStyles.FRAME_PURPLE_DARK
             elif _k == 'pbar':
                 if _string_theme == EnumStyles.PBAR_PURPLE.value:
                     final[_k] = EnumStyles.PBAR_PURPLE
@@ -527,28 +527,29 @@ class BasePage(ttk.Frame):
     def update_page_theme(self, theme: EnumStyles):
         self.configure(style=theme.value)
 
+    def _update_page_widgets(self, app_theme: MappingStyles):
+        if app_theme.get_last_update() == "buttons":
+            for btn in self._list_buttons:
+                btn.configure(style=app_theme.get_style_buttons().value)
+        elif app_theme.get_last_update() == "frames":
+            for _frame in self._list_frames:
+                _frame.configure(style=app_theme.get_style_frames().value)
+        elif app_theme.get_last_update() == "labels":
+            for lb in self._list_labels:
+                lb.configure(style=app_theme.get_style_labels().value)
+        elif app_theme.get_last_update() == "app":
+            self.update_page_theme(app_theme.get_style_app())
+        else:
+            print(f'DEBUG: {__class__.__name__} Nenhum tema foi alterado')
+
     def update_page_state(self, msg: MessageNotification):
-        
-        if EnumMessages.MSG_UPDATE_STYLE.value in msg.get_message_type().value:
-            _mapping: MappingStyles = msg.get_provider()
-            if _mapping.get_last_update() == "buttons":
-                for btn in self._list_buttons:
-                    btn.configure(style=_mapping.get_style_buttons().value)
-            elif _mapping.get_last_update() == "frames":
-                for _frame in self._list_frames:
-                    _frame.configure(style=_mapping.get_style_frames().value)
-            elif _mapping.get_last_update() == "labels":
-                for lb in self._list_labels:
-                    lb.configure(style=_mapping.get_style_labels().value)
-            elif _mapping.get_last_update() == "app":
-                self.update_page_theme(_mapping.get_style_app())
-            else:
-                print(f'DEBUG: {__class__.__name__} nenhum tema foi alterado => {_mapping.get_last_update()}')
-        elif EnumMessages.MSG_PROCESS_FINISHED.value in msg.keys():
+        if EnumMessages.MSG_UPDATE_STYLE.value == msg.get_message_type().value:
+            self._update_page_widgets(msg.get_provider())
+        elif EnumMessages.MSG_PROCESS_FINISHED.value == msg.get_message_type().value:
             print(f'{__class__.__name__} Nenhuma ação configurada para essa notificação!')
         else:
             print(
-                f'{__class__.__name__} Nenhuma ação configurada para essa notificação em update_page_state\n{msg}\n'
+                f'{__class__.__name__} Nenhuma ação configurada para essa notificação update_page_state\n{msg}\n'
             )
 
 

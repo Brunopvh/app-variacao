@@ -5,7 +5,9 @@ from app_variacao.soup_files import File
 from app_variacao.app.ui.core import (
     BasePage, BaseWindow, ContainerH, EnumStyles
 )
-from app_variacao.app.controllers import ControllerPopUpFiles
+from app_variacao.app.controllers import (
+    ControllerViewVariacao
+)
 
 
 class PageVariacao(BasePage):
@@ -17,7 +19,7 @@ class PageVariacao(BasePage):
         self.set_page_name('Váriação de leitura')
         self.container1 = ContainerH(self.frame_master)
         self.add_frame(self.container1)
-        self._controller = ControllerPopUpFiles()
+        self._controller = ControllerViewVariacao()
 
         self.btn_sheet_variacao = ttk.Button(
             self.container1,
@@ -43,13 +45,12 @@ class PageVariacao(BasePage):
         )
         self.add_btn(self.btn_back_page)
 
-        self.selected_sheet: str = None
-
     def select_sheet(self):
-        self.selected_sheet: File = self._controller.get_file_excel()
-        if self.selected_sheet is not None:
+        print(self._controller._controller_prefs.get_prefs())
+        self._controller.select_sheet_variacao()
+        if self._controller.sheet_variacao is not None:
             self.lb_sheet_variacao.config(
-                text=f'Planilha selecionada: {self.selected_sheet.basename()}'
+                text=f'Planilha selecionada: {self._controller.sheet_variacao.basename()}'
             )
 
     def back_page(self):

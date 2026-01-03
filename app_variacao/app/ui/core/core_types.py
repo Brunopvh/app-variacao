@@ -15,15 +15,17 @@ class EnumStyles(Enum):
     WINDOW_LIGHT_PURPLE = 'LIGHT_PURPLE'
 
     # Tema dos Frames
-    FRAME_DARK = 'Black.TFrame'
-    FRAME_LIGHT = 'LightFrame.TFrame'
-    FRAME_DARK_PURPLE = 'DarkPurple.TFrame'
-    LIGHT_PURPLE = 'LightPurple.TFrame'
-    GRAY = 'CinzaFrame.TFrame'
+    FRAME_DARK = 'Black.TFrame'  # OK
+    FRAME_DARK_GRAY = 'DarkGray.TFrame'
+    FRAME_LIGHT = 'LightFrame.TFrame'  # OK
+    FRAME_PURPLE_DARK = 'DarkPurple.TFrame'  # OK
+    FRAME_PURPLE_LIGHT = 'LightPurple.TFrame'  # OK
+    FRAME_GRAY = 'CinzaFrame.TFrame'  # OK
+    FRAME_ORANGE_DARK = 'DarkOrange.TFrame'
 
     # Tama dos botões
-    BUTTON_PURPLE_LIGHT = 'Custom.TButtonPurpleLight'
-    BUTTON_GREEN = 'Custom.TButtonGreen'
+    BUTTON_PURPLE_LIGHT = 'Custom.TButtonPurpleLight'  # OK
+    BUTTON_GREEN = 'Custom.TButtonGreen'  # OK
 
     # Tema da barra de progresso
     PBAR_GREEN = "Custom.Horizontal.TProgressbar"

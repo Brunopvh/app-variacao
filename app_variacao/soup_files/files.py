@@ -3,11 +3,11 @@
 entre outros. Não depende de módulos externos apenas de builtins e stdlib.
 """
 from __future__ import annotations
+from typing import Any
 from enum import Enum
 import os
 import json
 import platform
-#from pathlib import Path
 from hashlib import md5
 
 # Windows / Linux / ...
@@ -64,7 +64,6 @@ class EnumDocFiles(Enum):
         '.zip',
         '.*'
     ]
-
 
 
 class File(object):
@@ -460,7 +459,7 @@ class JsonData(object):
     def to_string(self) -> str:
         return self.jsonString
 
-    def to_dict(self) -> dict[str, object]:
+    def to_dict(self) -> dict[str, Any]:
         """
             Exportar/Converter o dado atual em um dicionário python.
         """
@@ -478,11 +477,11 @@ class JsonConvert(object):
         Conversão de um dado JSON em dados python
     """
 
-    def __init__(self, jsonData: JsonData):
-        self.jsonData: JsonData = jsonData
+    def __init__(self, data: JsonData):
+        self.data: JsonData = data
 
     def to_json_data(self) -> JsonData:
-        return self.jsonData
+        return self.data
 
     @classmethod
     def from_file(cls, file: File) -> JsonConvert:
