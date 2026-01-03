@@ -291,3 +291,14 @@ class ProgressBar(object):
 
     def get_end_value(self) -> int:
         return self.interface_pbar.get_end_value()
+
+    @classmethod
+    def create_pbar_tk(cls, container: Container, *, mode: str = 'determinate'):
+        return cls(
+            ProgressBarTkDeterminate(container) if mode == 'determinate' else ProgressBarTkIndeterminate(container)
+        )
+
+
+__all__ = [
+    'Container', 'ContainerV', 'ContainerH', 'InterfaceProgressBar', 'ProgressBar'
+]

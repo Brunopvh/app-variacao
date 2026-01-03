@@ -67,3 +67,9 @@ class ObjectRunCommands(object):
     def run_commands(self) -> None:
         for cmd in self._commands:
             cmd.execute()
+
+
+__all__ = [
+    'ObjectAdapter', 'ObjectCommand', 'ObjectRunCommands', 'BuilderInterface',
+]
+

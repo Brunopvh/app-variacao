@@ -1,10 +1,7 @@
-from app_variacao.app.ui.core import (
-    MyApp, MappingStyles, MessageNotification
+from app_variacao.app.ui import (
+    MyApp, MessageNotification, EnumMessages, MappingStyles
 )
-from app_variacao.app.ui.core.core_types import EnumMessages
-from app_variacao.app.ui.core.core_pages import MappingStyles
-from app_variacao.app.view import PageVariacao, HomePage
-from app_variacao.app.view.menu_bar import MenuBar
+from app_variacao.app.view import PageVariacao, HomePage, MenuBar
 from app_variacao.app.controllers import ControllerPrefs
 
 

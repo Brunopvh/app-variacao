@@ -3,7 +3,7 @@ import json
 from typing import Any
 from app_variacao.types.array import ArrayList, BaseDict
 from app_variacao.soup_files import JsonConvert
-from app_variacao.app.ui.core.core_pages import MappingStyles
+from app_variacao.app.ui.core_pages import MappingStyles
 from app_variacao.util import (
     File, Directory, EnumDocFiles, UserAppDir
 )
@@ -187,6 +187,13 @@ class AppFileDialog(object):
         elif file_ext_type == EnumDocFiles.ODS:
             self.pop_up_text_filetypes = [("Arquivos ODS", "*.ods")]
             self.title_pop_up_files = 'Selecione uma planilha ODS'
+        elif file_ext_type == EnumDocFiles.SHEET:
+            self.pop_up_text_filetypes = [
+                ("Planilhas Excel", "*.xlsx"),
+                ("Planilhas ODS", "*.ods"),
+                ("Planilhas CSV", "*.csv *.txt"),
+            ]
+            self.title_pop_up_files = 'Selecione uma Planilha'
         elif file_ext_type == EnumDocFiles.IMAGE:
             self.pop_up_text_filetypes = [("Arquivos de Imagem", "*.png *.jpg *.jpeg *.svg")]
             self.title_pop_up_files = 'Selecione Imagens'
@@ -224,8 +231,7 @@ class AppFileDialog(object):
             Caixa de diálogo para selecionar um arquivo
         """
         self._config_pop_up_open_filename(file_ext_type)
-        print(
-            f'{__class__.__name__} valores ... {file_ext_type} | {self.title_pop_up_files} | {self.title_pop_up_files} | {self.pop_up_text_filetypes}')
+        print(f'{__class__.__name__}  | {file_ext_type}')
         filename: str = filedialog.askopenfilename(
             title=self.title_pop_up_files,
             initialdir=self.prefs.get_initial_input_dir().absolute(),

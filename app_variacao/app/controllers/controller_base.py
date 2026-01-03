@@ -62,6 +62,9 @@ class ControllerPopUpFiles(ControllerVariacao):
     def get_file_csv(self) -> File | None:
         return self.model.select_file_disk(EnumDocFiles.CSV)
 
+    def get_sheet(self) -> File | None:
+        return self.model.select_file_disk(EnumDocFiles.SHEET)
+
 
 class ControllerPrefs(ControllerVariacao):
 

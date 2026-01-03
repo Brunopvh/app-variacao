@@ -1,6 +1,4 @@
-from app_variacao.app.ui.core import (
-    BasePage, BaseWindow, EnumStyles
-)
+from app_variacao.app.ui import BasePage, BaseWindow, EnumStyles
 from tkinter import ttk
 from typing import Any, Callable
 

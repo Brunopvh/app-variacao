@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: app_variacao
+Version: 0.1.0
+Summary: Variação de Leitura
+Author: Bruno Chaves
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: openpyxl>=3.1.5
+Requires-Dist: pandas
+
+# app-variacao

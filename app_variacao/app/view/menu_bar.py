@@ -1,9 +1,8 @@
 from __future__ import annotations
 from typing import Callable, Any, Optional
 from app_variacao.app.controllers import ControllerPopUpFiles, ControllerPrefs
-from app_variacao.app.ui.base_view import BaseView
-from app_variacao.app.ui.core.core_types import EnumStyles, MessageNotification, EnumMessages
-from app_variacao.app.ui.core.core_pages import MyApp
+from app_variacao.app.ui.core_types import EnumStyles, MessageNotification, EnumMessages
+from app_variacao.app.ui.core_pages import MyApp
 import tkinter as tk
 
 
@@ -24,7 +23,7 @@ def add_item_menu(name: str, submenu: tk.Menu, *, tooltip: str = None, cmd: Call
     return submenu.index(tk.END)
 
 
-class MenuBar(BaseView):
+class MenuBar(object):
 
     def __init__(self, *, app: MyApp):
         super().__init__()

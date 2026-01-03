@@ -19,7 +19,7 @@ class ControllerViewVariacao(ControllerVariacao):
             self.sheet_variacao = File(self._controller_prefs.get_prefs()['sheet_variacao'])
 
     def select_sheet_variacao(self) -> None:
-        f = self._controller_popup_files.get_file_excel()
+        f: File | None = self._controller_popup_files.get_sheet()
         if f is not None:
             self.sheet_variacao = f
             self._controller_prefs.get_prefs()['sheet_variacao'] = f.absolute()

@@ -2,9 +2,10 @@ from __future__ import annotations
 import tkinter as tk
 from typing import Any, Callable, Literal, Union, TypeAlias
 from tkinter import (ttk, Tk, messagebox)
-from app_variacao.app.ui.core.core_types import (
+from app_variacao.types import BaseDict
+from app_variacao.app.ui.core_types import (
     AbstractObserver, AbstractNotifyProvider,
-    MessageNotification, CoreDict, EnumStyles, EnumMessages
+    MessageNotification, EnumStyles, EnumMessages
 )
 
 
@@ -234,7 +235,7 @@ class AppStyles(object):
            )
 
 
-class MappingStyles(CoreDict[ValueStyle]):
+class MappingStyles(BaseDict[ValueStyle]):
     """
     Mapeia os estilos dos widgets, botões, labels, frames etc.
     """
@@ -716,7 +717,6 @@ class Navigator(object):
         self.current_page = self._app_pages[previous_page_route]
         self.current_page.init_ui_page()
         self.current_page.set_size_screen()
-        self.current_page.update_page_state()
         self.current_page.pack(expand=True, fill='both', padx=2, pady=2)
 
 
@@ -792,3 +792,9 @@ class MyApp(object):
 def run_app(myapp: MyApp) -> None:
     myapp.get_navigator().push('/home')
     myapp.get_window().mainloop()
+
+
+__all__ = [
+    'STYLES_KEYS', 'ValueStyle', 'AppStyles', 'MappingStyles', 'ObserverWidget',
+    'NotifyWidget', 'BaseWindow', 'BasePage', 'Navigator', 'MyApp', 'run_app',
+]
