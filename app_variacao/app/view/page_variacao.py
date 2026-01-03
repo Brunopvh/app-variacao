@@ -19,7 +19,7 @@ class PageVariacao(BasePage):
         self.set_page_name('Váriação de leitura')
         self.container1 = ContainerH(self.frame_master)
         self.add_frame(self.container1)
-        self._controller = ControllerViewVariacao()
+        self.controller = ControllerViewVariacao()
 
         self.btn_sheet_variacao = ttk.Button(
             self.container1,
@@ -34,6 +34,10 @@ class PageVariacao(BasePage):
             self.container1,
             text='Nenhuma planilha selecionada!'
         )
+        if self.controller.sheet_variacao is not None:
+            self.lb_sheet_variacao.configure(
+                text=f'Planilha: {self.controller.sheet_variacao.basename()}'
+            )
         self.add_label(self.lb_sheet_variacao)
 
         self.container2 = ContainerH(self.frame_master)
@@ -46,11 +50,11 @@ class PageVariacao(BasePage):
         self.add_btn(self.btn_back_page)
 
     def select_sheet(self):
-        print(self._controller._controller_prefs.get_prefs())
-        self._controller.select_sheet_variacao()
-        if self._controller.sheet_variacao is not None:
+
+        self.controller.select_sheet_variacao()
+        if self.controller.sheet_variacao is not None:
             self.lb_sheet_variacao.config(
-                text=f'Planilha selecionada: {self._controller.sheet_variacao.basename()}'
+                text=f'Planilha selecionada: {self.controller.sheet_variacao.basename()}'
             )
 
     def back_page(self):

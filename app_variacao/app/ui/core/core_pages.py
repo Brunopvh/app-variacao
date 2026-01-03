@@ -238,42 +238,49 @@ class MappingStyles(CoreDict[Any]):
         )
 
     @classmethod
-    def create_from_dict(cls, values: dict[str, str]) -> MappingStyles:
+    def format_dict(cls, values: dict[str, Any]) -> dict[str, Any]:
         final: dict[str, Any] = dict()
-        for _k in cls._themes_keys:
-            _string_theme: str = values[_k]
+        keys_dict = ['buttons', 'labels', 'frames', 'pbar', 'app']
+        for _k, _v in values.items():
+            if _k in keys_dict:
+                if _k == 'buttons':
+                    if _v == EnumStyles.BUTTON_PURPLE_LIGHT.value:
+                        final[_k] = EnumStyles.BUTTON_PURPLE_LIGHT
+                    elif _v == EnumStyles.BUTTON_GREEN.value:
+                        final[_k] = EnumStyles.BUTTON_GREEN
+                elif _k == 'labels':
+                    if _v == EnumStyles.LABEL_DEFAULT.value:
+                        final[_k] = EnumStyles.LABEL_DEFAULT
+                    elif _v == EnumStyles.LABEL_PURPLE_LIGHT.value:
+                        final[_k] = EnumStyles.LABEL_PURPLE_LIGHT
+                elif _k == 'frames':
+                    if _v == EnumStyles.FRAME_DARK.value:
+                        final[_k] = EnumStyles.FRAME_DARK
+                    elif _v == EnumStyles.FRAME_LIGHT.value:
+                        final[_k] = EnumStyles.FRAME_LIGHT
+                    elif _v == EnumStyles.FRAME_PURPLE_DARK.value:
+                        final[_k] = EnumStyles.FRAME_PURPLE_DARK
+                elif _k == 'pbar':
+                    if _v == EnumStyles.PBAR_PURPLE.value:
+                        final[_k] = EnumStyles.PBAR_PURPLE
+                    elif _v == EnumStyles.PBAR_GREEN.value:
+                        final[_k] = EnumStyles.PBAR_GREEN
+                    elif _v == EnumStyles.PBAR_PURPLE_LIGHT.value:
+                        final[_k] = EnumStyles.PBAR_PURPLE_LIGHT
+            else:
+                final[_k] = _v
+        return final
 
-            if _k == 'buttons':
-                if _string_theme == EnumStyles.BUTTON_PURPLE_LIGHT.value:
-                    final[_k] = EnumStyles.BUTTON_PURPLE_LIGHT
-                elif _string_theme == EnumStyles.BUTTON_GREEN.value:
-                    final[_k] = EnumStyles.BUTTON_GREEN
-            elif _k == 'labels':
-                if _string_theme == EnumStyles.LABEL_DEFAULT.value:
-                    final[_k] = EnumStyles.LABEL_DEFAULT
-                elif _string_theme == EnumStyles.LABEL_PURPLE_LIGHT.value:
-                    final[_k] = EnumStyles.LABEL_PURPLE_LIGHT
-            elif _k == 'frames':
-                if _string_theme == EnumStyles.FRAME_DARK.value:
-                    final[_k] = EnumStyles.FRAME_DARK
-                elif _string_theme == EnumStyles.FRAME_LIGHT.value:
-                    final[_k] = EnumStyles.FRAME_LIGHT
-                elif _string_theme == EnumStyles.FRAME_PURPLE_DARK.value:
-                    final[_k] = EnumStyles.FRAME_PURPLE_DARK
-            elif _k == 'pbar':
-                if _string_theme == EnumStyles.PBAR_PURPLE.value:
-                    final[_k] = EnumStyles.PBAR_PURPLE
-                elif _string_theme == EnumStyles.PBAR_GREEN.value:
-                    final[_k] = EnumStyles.PBAR_GREEN
-                elif _string_theme == EnumStyles.PBAR_PURPLE_LIGHT.value:
-                    final[_k] = EnumStyles.PBAR_PURPLE_LIGHT
+    @classmethod
+    def create_from_dict(cls, values: dict[str, str]) -> MappingStyles:
+        final: dict[str, Any] = cls.format_dict(values)
         return cls(final)
 
     def to_dict(self) -> dict[str, str]:
         final = dict()
-        themes_keys = ['buttons', 'labels', 'frames', 'pbar', 'app', 'last_update']
+        themes_keys = ['buttons', 'labels', 'frames', 'pbar', 'app',]
         for key in themes_keys:
-            final[key] = self[key]
+            final[key] = self[key].value
         return final
 
     def get_last_update(self) -> str:
