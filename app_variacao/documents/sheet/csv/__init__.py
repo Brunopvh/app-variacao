@@ -1,1 +1,2 @@
-from .load import ReadSheetCsv, CsvLoad
+from .load import ReadSheetCsv, CsvLoad, CsvEncoding
+

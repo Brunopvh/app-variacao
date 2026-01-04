@@ -1,9 +1,14 @@
 from __future__ import annotations
 import json
-from typing import Any
+from typing import Any, TypedDict, Literal
+
+from app_variacao.documents.sheet.csv import CsvEncoding, ReadSheetCsv
+from app_variacao.documents.sheet.excel import ReadSheetExcel
 from app_variacao.types.array import ArrayList, BaseDict
 from app_variacao.soup_files import JsonConvert
-from app_variacao.app.ui.core_pages import MappingStyles
+from app_variacao.app.ui import (
+    MappingStyles, TypeMappingStylesDict,
+)
 from app_variacao.util import (
     File, Directory, EnumDocFiles, UserAppDir
 )
@@ -12,6 +17,153 @@ from tkinter import filedialog
 import os.path
 
 _app_dir = UserAppDir('app-variacao')
+
+KeyFileDialog = Literal[
+    'initial_input_dir', 'initial_output_dir', 'last_input_dir', 'last_output_dir', 'last_dir',
+]
+
+
+#==============================================================#
+# Configurações para o pop-up filedialog
+#==============================================================#
+class TypeConfFileDialog(TypedDict):
+
+    initial_input_dir: Directory
+    initial_output_dir: Directory
+    last_input_dir: Directory
+    last_output_dir: Directory
+    last_dir: Directory
+
+
+class PreferencesFileDialog(BaseDict):
+
+    _instance_prefs = None  # Singleton
+    keys_file_dialog: tuple = (
+        'initial_output_dir', 'initial_input_dir', 'last_dir'
+    )
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance_prefs is None:
+            cls._instance_prefs = super(PreferencesFileDialog, cls).__new__(cls)
+        return cls._instance_prefs
+
+    def __init__(self, values: TypeConfFileDialog = None) -> None:
+        super().__init__(values)
+        if hasattr(self, '_initialized_prefs') and self._initialized_prefs:
+            return
+        self._initialized_prefs = True
+
+    def to_dict(self) -> dict[str, str]:
+        output: dict[str, str] = dict()
+        key: KeyFileDialog
+        value: Directory
+        for key, value in self.items():
+            if key == 'initial_input_dir':
+                output[key] = value.absolute()
+            elif key == 'initial_output_dir':
+                output[key] = value.absolute()
+            elif key == 'last_input_dir':
+                output[key] = value.absolute()
+            elif key == 'last_output_dir':
+                output[key] = value.absolute()
+            elif key == 'last_dir':
+                output[key] = value.absolute()
+        return output
+
+    def merge(self, data: TypeConfFileDialog) -> None:
+        for key, value in data.items():
+            self[key] = value
+
+    @classmethod
+    def format_dict(cls, data: dict[str, str]) -> TypeConfFileDialog:
+        final: TypeConfFileDialog = dict()
+        key: KeyFileDialog
+        value: str
+        for key, value in data.items():
+            if key == 'initial_input_dir':
+                final[key] = Directory(value)
+            elif key == 'initial_output_dir':
+                final[key] = Directory(value)
+            elif key == 'last_input_dir':
+                final[key] = Directory(value)
+            elif key == 'last_output_dir':
+                final[key] = Directory(value)
+            elif key == 'last_dir':
+                final[key] = Directory(value)
+        return final
+
+    @classmethod
+    def create_default(cls) -> PreferencesFileDialog:
+        data: TypeConfFileDialog = {
+            'initial_input_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'initial_output_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'last_input_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'last_output_dir': _app_dir.userFileSystem.get_user_downloads(),
+            'last_dir': _app_dir.userFileSystem.get_user_downloads(),
+        }
+        return cls(data)
+
+
+#==============================================================#
+# Configurações para importação de planilhas
+#==============================================================#
+
+ExtensionSheet = Literal['.xlsx', '.ods', '.csv', '.txt']
+CsvSep = Literal[',', ';', '\t', '|', '_']
+
+
+class TypeImportSheet(TypedDict):
+
+    extension: ExtensionSheet
+    path: File
+    sep: CsvSep
+    encoding: CsvEncoding
+
+
+class PreferencesImportSheet(BaseDict):
+
+    _instance_prefs = None  # Singleton
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance_prefs is None:
+            cls._instance_prefs = super(PreferencesImportSheet, cls).__new__(cls)
+        return cls._instance_prefs
+
+    def __init__(self, values: TypeImportSheet = None) -> None:
+        super().__init__(values)
+        if hasattr(self, '_initialized_prefs') and self._initialized_prefs:
+            return
+        self._initialized_prefs = True
+        self['extension'] = '.csv'
+        self['sep'] = ";"
+        self['encoding'] = 'utf-8'
+
+    def merge(self, data: TypeImportSheet) -> None:
+        for key, value in data.items():
+            self[key] = value
+
+    def to_dict(self) -> dict[str, str]:
+        final = dict()
+        for key, value in self.items():
+            if key == 'path':
+                final[key] = value.absolute()
+            else:
+                final[key] = value
+        return final
+
+
+#==============================================================#
+# Configurações gerais do APP
+#==============================================================#
+KeyUserConfig = Literal['prefs_file_dialog', 'app_styles', 'work_dir']
+
+
+class TypeConfApp(TypedDict, total=False):
+
+    prefs_file_dialog: PreferencesFileDialog
+    app_styles: MappingStyles
+    work_dir: Directory
+    import_sheet: TypeImportSheet
 
 
 class UserPreferences(BaseDict):
@@ -26,30 +178,37 @@ class UserPreferences(BaseDict):
             cls._instance_prefs = super(UserPreferences, cls).__new__(cls)
         return cls._instance_prefs
 
-    def __init__(self, values: dict = None) -> None:
+    def __init__(self, values: TypeConfApp = None) -> None:
         super().__init__(values)
         if hasattr(self, '_initialized_prefs') and self._initialized_prefs:
             return
         self._initialized_prefs = True
+        self['prefs_file_dialog'] = PreferencesFileDialog.create_default()
+        self['app_styles'] = MappingStyles.create_default()
+        self['work_dir'] = _app_dir.workspaceDirApp
+        self['import_sheet'] = PreferencesImportSheet()
 
     def __repr__(self):
         return f"{self.__class__.__name__}()\n{self.values()}"
 
+    def get_pref_file_dialog(self) -> PreferencesFileDialog:
+        return self['prefs_file_dialog']
+
     def get_initial_output_dir(self) -> Directory:
-        return self['initial_output_dir']
+        return self['prefs_file_dialog']['initial_output_dir']
 
     def set_initial_output_dir(self, new: Directory) -> None:
         if not isinstance(new, Directory):
             raise TypeError('initial_output_dir must be a Directory')
-        self['initial_output_dir'] = new
+        self['prefs_file_dialog']['initial_output_dir'] = new
 
     def get_initial_input_dir(self) -> Directory:
-        return self['initial_input_dir']
+        return self['prefs_file_dialog']['initial_input_dir']
 
     def set_initial_input_dir(self, new: Directory) -> None:
         if not isinstance(new, Directory):
             raise TypeError('initial_input_dir must be a Directory')
-        self['initial_input_dir'] = new
+        self['prefs_file_dialog']['initial_input_dir'] = new
 
     def set_app_styles(self, styles: MappingStyles):
         if not isinstance(styles, MappingStyles):
@@ -61,44 +220,57 @@ class UserPreferences(BaseDict):
 
     def to_dict(self) -> dict[str, Any]:
         data = {}
+        k: KeyFileDialog
+        v: Any
         for k, v in self.items():
             # métodos absolute() devem ser salvos como strings.
             if hasattr(v, 'absolute'):
                 data[k] = v.absolute()
             elif k == 'app_styles':
-                pass
+                data[k] = v.to_dict()
+            elif k == 'prefs_file_dialog':
+                data[k] = v.to_dict()
+            elif k == 'import_sheet':
+                data[k] = v.to_dict()
             else:
                 data[k] = v
-        data['app_styles'] = self['app_styles'].to_dict()
         return data
 
-    def merge_dict(self, merge: dict[str, Any]) -> None:
-        #fmt_dict = UserPreferences.format_dict(merge)
+    def merge_dict(self, merge: TypeConfApp) -> None:
         for k, v in merge.items():
             if k == 'app_styles':
                 self.set_app_styles(v)
+            elif k == 'prefs_file_dialog':
+                self['prefs_file_dialog'] = v
+            elif k == 'import_sheet':
+                self['import_sheet'] = v
             else:
                 self[k] = v
 
     @classmethod
-    def format_dict(cls, data: dict[str, Any]) -> dict[str, Any]:
-        final: dict[str, Any] = dict()
-        keys_dirs: tuple = (
-            'initial_output_dir', 'initial_input_dir', 'last_dir', 'work_dir',
-        )
+    def format_dict(cls, data: dict[str, Any]) -> TypeConfApp:
+        final: TypeConfApp = dict()
+        key: KeyUserConfig
         for key, value_conf in data.items():
-            if key in keys_dirs:
-                if isinstance(value_conf, str):
-                    final[key] = Directory(value_conf)
-                elif isinstance(value_conf, Directory):
-                    final[key] = value_conf
+            # Verificar se é uma configuração de filedialog
+            if key == 'prefs_file_dialog':
+                prefs_file_dialog = PreferencesFileDialog.create_default()
+                data_file_dialog: TypeConfFileDialog = PreferencesFileDialog.format_dict(value_conf)
+                prefs_file_dialog.merge(data_file_dialog)
+                final['prefs_file_dialog'] = prefs_file_dialog
+            # Verificar se é uma configuração de estilo
             elif key == 'app_styles':
-                fmt_data_styles: dict = MappingStyles.format_dict(value_conf)
+                fmt_data_styles: TypeMappingStylesDict = MappingStyles.format_dict(value_conf)
                 mapping_styles: MappingStyles = MappingStyles.create_default()
                 mapping_styles.merge_dict(fmt_data_styles)
                 final['app_styles'] = mapping_styles
-            else:
-                final[key] = value_conf
+            elif key == 'work_dir':
+                if isinstance(value_conf, str):
+                    final['work_dir'] = Directory(value_conf)
+                elif isinstance(value_conf, Directory):
+                    final['work_dir'] = value_conf
+            elif key == 'import_sheet':
+                final['import_sheet'] = value_conf
         return final
 
 
@@ -139,18 +311,9 @@ class ModelPreferences(object):
 
     def _create_prefs(self) -> None:
         self._user_prefs = UserPreferences()
-        data = {
-            'app_styles': MappingStyles.create_default(),
-            'initial_input_dir': _app_dir.userFileSystem.get_user_downloads(),
-            'last_dir': _app_dir.userFileSystem.get_user_downloads(),
-            'initial_output_dir': _app_dir.userFileSystem.get_user_downloads(),
-            'work_dir': _app_dir.workspaceDirApp,
-        }
-        self._user_prefs.merge_dict(data)
 
         if self.file_prefs.exists():
             # Criar preferências a partir do arquivo de configuração
-            print(f'{__class__.__name__} Criando preferências do arquivo: {self.file_prefs.absolute()}')
             content_file_config: dict[str, Any] = self.load_file_prefs()
             self._user_prefs.merge_dict(
                 UserPreferences.format_dict(content_file_config)

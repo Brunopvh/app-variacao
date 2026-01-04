@@ -8,7 +8,8 @@ from app_variacao.documents.erros import LoadWorkbookError
 from app_variacao.documents.sheet.types import SheetData, WorkbookData, IndexTables
 from app_variacao.types.core import ObjectAdapter
 
-CsvEncoding = Literal['utf-8', 'iso-8859-1']
+CsvEncoding = Literal['utf-8', 'iso-8859-1', 'latin1',  'cp1252']
+# ["utf-8", "iso-8859-1", "latin1",  "cp1252"]
 
 
 class CsvLoad(ABC):
@@ -101,4 +102,5 @@ class ReadSheetCsv(ObjectAdapter):
         return cls(rd)
 
 
-__all__ = ['ReadSheetCsv', 'CsvLoad']
+__all__ = ['ReadSheetCsv', 'CsvLoad', 'CsvEncoding']
+

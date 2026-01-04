@@ -4,13 +4,9 @@ from typing import Any, Callable, Literal, Union, TypeAlias
 from tkinter import (ttk, Tk, messagebox)
 from app_variacao.types import BaseDict
 from app_variacao.app.ui.core_types import (
-    AbstractObserver, AbstractNotifyProvider,
-    MessageNotification, EnumStyles, EnumMessages
+    AbstractObserver, AbstractNotifyProvider, TypeMappingStylesDict,
+    MessageNotification, EnumStyles, EnumMessages, MappingStyles,
 )
-
-
-STYLES_KEYS = Literal["buttons", "labels", "pbar", "frames", "app"]
-ValueStyle: TypeAlias = Union[EnumStyles, str]
 
 
 def show_alert(text: str):
@@ -233,175 +229,6 @@ class AppStyles(object):
            troughcolor="#eeeeee",  # fundo da barra
            background="#4B0081"
            )
-
-
-class MappingStyles(BaseDict[ValueStyle]):
-    """
-    Mapeia os estilos dos widgets, botões, labels, frames etc.
-    """
-
-    _instance_map_styles = None
-    styles_keys: tuple[str] = (
-        'buttons', 'labels', 'frames', 'pbar', 'app', 'menu_bar',
-    )
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance_map_styles is None:
-            cls._instance_map_styles = super(MappingStyles, cls).__new__(cls)
-        return cls._instance_map_styles
-
-    def __init__(self, values: dict[str, Any] = None) -> None:
-        super().__init__(values)
-        # Garante que __init__ não será executado mais de uma vez
-        if hasattr(self, '_initialized') and self._initialized:
-            return
-        self._initialized = True
-
-    def __setitem__(self, key, value):
-        if not isinstance(key, str):
-            raise ValueError(
-                f'{__class__.__name__} chave de estilo incorreta use str, não {type(key)}'
-            )
-        if (not isinstance(value, str)) and (not isinstance(value, EnumStyles)):
-            raise ValueError(
-                f'{__class__.__name__} valor de estilo incorreto use str|EnumStyles, não {type(value)}'
-            )
-        super().__setitem__(key, value)
-
-    def __getitem__(self, key) -> ValueStyle:
-        return super().__getitem__(key)
-
-    @classmethod
-    def create_default(cls) -> MappingStyles:
-        return cls(
-            {
-                'buttons': EnumStyles.BUTTON_PURPLE_LIGHT,
-                'labels': EnumStyles.LABEL_PURPLE_LIGHT,
-                'frames': EnumStyles.FRAME_PURPLE_DARK,
-                'pbar': EnumStyles.PBAR_PURPLE,
-                'app': EnumStyles.WINDOW_DARK,
-                'menu_bar': EnumStyles.TOPBAR_DARK,
-                'last_update': 'frames',
-            }
-        )
-
-    @classmethod
-    def format_dict(cls, values: dict[str, Any]) -> dict[str, ValueStyle]:
-        """
-        Formatar um dicionário para o modelo MappingStyles()
-        """
-        final: dict[str, ValueStyle] = dict()
-
-        for key_style, value_style in values.items():
-            if key_style == 'buttons':
-                if value_style == EnumStyles.BUTTON_PURPLE_LIGHT.value:
-                    final[key_style] = EnumStyles.BUTTON_PURPLE_LIGHT
-                elif value_style == EnumStyles.BUTTON_GREEN.value:
-                    final[key_style] = EnumStyles.BUTTON_GREEN
-                elif value_style == EnumStyles.BUTTON_PURPLE_DARK.value:
-                    final[key_style] = EnumStyles.BUTTON_PURPLE_DARK
-            elif key_style == 'labels':
-                if value_style == EnumStyles.LABEL_DEFAULT.value:
-                    final[key_style] = EnumStyles.LABEL_DEFAULT
-                elif value_style == EnumStyles.LABEL_PURPLE_LIGHT.value:
-                    final[key_style] = EnumStyles.LABEL_PURPLE_LIGHT
-            elif key_style == 'frames':
-                if value_style == EnumStyles.FRAME_DARK.value:
-                    final[key_style] = EnumStyles.FRAME_DARK
-                elif value_style == EnumStyles.FRAME_LIGHT.value:
-                    final[key_style] = EnumStyles.FRAME_LIGHT
-                elif value_style == EnumStyles.FRAME_PURPLE_DARK.value:
-                    final[key_style] = EnumStyles.FRAME_PURPLE_DARK
-                elif value_style == EnumStyles.FRAME_DARK_GRAY.value:
-                    final[key_style] = EnumStyles.FRAME_DARK_GRAY
-                elif value_style == EnumStyles.FRAME_ORANGE_DARK.value:
-                    final[key_style] = EnumStyles.FRAME_ORANGE_DARK
-            elif key_style == 'pbar':
-                if value_style == EnumStyles.PBAR_PURPLE.value:
-                    final[key_style] = EnumStyles.PBAR_PURPLE
-                elif value_style == EnumStyles.PBAR_GREEN.value:
-                    final[key_style] = EnumStyles.PBAR_GREEN
-                elif value_style == EnumStyles.PBAR_PURPLE_LIGHT.value:
-                    final[key_style] = EnumStyles.PBAR_PURPLE_LIGHT
-            elif key_style == 'menu_bar':
-                print(f'TEMA DA BARRA = {key_style} {value_style}\n')
-                if value_style == EnumStyles.TOPBAR_DARK.value:
-                    final[key_style] = EnumStyles.TOPBAR_DARK
-                elif value_style == EnumStyles.TOPBAR_LIGHT.value:
-                    final[key_style] = EnumStyles.TOPBAR_LIGHT
-                elif value_style == EnumStyles.TOPBAR_PURPLE_LIGHT.value:
-                    final[key_style] = EnumStyles.TOPBAR_PURPLE_LIGHT
-                elif value_style == EnumStyles.TOPBAR_PURPLE_DARK.value:
-                    final[key_style] = EnumStyles.TOPBAR_PURPLE_DARK
-        return final
-
-    @classmethod
-    def create_from_dict(cls, values: dict[str, str]) -> MappingStyles:
-        final: dict[str, ValueStyle] = cls.format_dict(values)
-        _obj = cls()
-        _obj.merge_dict(final)
-        return _obj
-
-    def merge_dict(self, new: dict[str, Any]) -> None:
-        for k in new.keys():
-            self[k] = new[k]
-
-    def to_dict(self) -> dict[str, str]:
-        final = dict()
-        for key, value_style in self.items():
-            if isinstance(value_style, EnumStyles):
-                final[key] = value_style.value
-            else:
-                final[key] = value_style
-        return final
-
-    def get_last_update(self) -> str:
-        return self["last_update"]
-
-    def set_last_update(self, value: str):
-        self["last_update"] = value
-
-    def get_style_buttons(self) -> EnumStyles:
-        return self['buttons']
-
-    def set_style_buttons(self, style: EnumStyles) -> None:
-        self['buttons'] = style
-        self["last_update"] = "buttons"
-
-    def get_style_labels(self) -> EnumStyles:
-        return self['labels']
-
-    def set_style_labels(self, style: EnumStyles) -> None:
-        self['labels'] = style
-        self["last_update"] = "labels"
-
-    def get_style_frames(self) -> EnumStyles:
-        return self['frames']
-
-    def set_style_frames(self, style: EnumStyles) -> None:
-        self['frames'] = style
-        self["last_update"] = "frames"
-
-    def get_style_pbar(self) -> EnumStyles:
-        return self['pbar']
-
-    def set_style_pbar(self, style: EnumStyles) -> None:
-        self['pbar'] = style
-        self["last_update"] = "pbar"
-
-    def get_style_app(self) -> EnumStyles:
-        return self['app']
-
-    def set_style_app(self, style: EnumStyles) -> None:
-        self['app'] = style
-        self["last_update"] = "app"
-
-    def get_style_menu_bar(self) -> EnumStyles:
-        return self['menu_bar']
-
-    def set_style_menu_bar(self, new: EnumStyles) -> None:
-        self['menu_bar'] = new
-        self['last_update'] = 'menu_bar'
 
 
 class ObserverWidget(AbstractObserver):
@@ -795,6 +622,7 @@ def run_app(myapp: MyApp) -> None:
 
 
 __all__ = [
-    'STYLES_KEYS', 'ValueStyle', 'AppStyles', 'MappingStyles', 'ObserverWidget',
+    'AppStyles', 'MappingStyles', 'ObserverWidget',
     'NotifyWidget', 'BaseWindow', 'BasePage', 'Navigator', 'MyApp', 'run_app',
+    'show_info', 'show_alert',
 ]
