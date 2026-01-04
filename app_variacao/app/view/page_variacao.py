@@ -28,31 +28,20 @@ class PageVariacao(BasePage):
         # =============================================================#
         self.container1 = ContainerH(self.frame_master)
         self.add_frame(self.container1)
-        self.btn_sheet_variacao = ttk.Button(
-            self.container1,
-            text='Selecionar\nPlanilha',
-            #command=self.load_data_to_view,
-            style=EnumStyles.BUTTON_PURPLE_LIGHT.value,
-        )
-        self.add_btn(self.btn_sheet_variacao)
 
-        self.lb_sheet_variacao = ttk.Label(
-            self.container1,
-            text='Nenhuma planilha selecionada!'
-        )
-        if self.controller.sheet_variacao is not None:
-            self.lb_sheet_variacao.configure(
-                text=f'Planilha: {self.controller.sheet_variacao.basename()}'
-            )
-        #self.add_label(self.lb_sheet_variacao)
+        # Botão para processar/ler
+        self.btn_read = ttk.Button(self.container1, text="Carregar Dados", command=self.load_data_to_view)
+        self.add_btn(self.btn_read)
+        #self.btn_sheet_variacao = ttk.Button(
+        #    self.container1, text='Selecionar Planilha',
+        #    command=self.load_data_to_view, style=EnumStyles.BUTTON_PURPLE_LIGHT.value,)
+        #self.add_btn(self.btn_sheet_variacao)
 
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
         # =============================================================#
-        self.config_import: DataImportConfigView = DataImportConfigView(self.frame_master)
-        self.btn_sheet_variacao.configure(command=self.config_import.on_select_file)
-        # Botão para processar/ler
-        self.btn_read = ttk.Button(self.frame_master, text="Carregar Dados", command=self.load_data_to_view)
+        self.config_import: DataImportConfigView = DataImportConfigView(self.container1)
+        #self.btn_sheet_variacao.configure(command=self.config_import.on_select_file)
 
         # =============================================================#
         # Container 3 - Exibição dos dados
@@ -64,27 +53,20 @@ class PageVariacao(BasePage):
             self.on_file_loaded()
 
     def select_sheet(self):
-        self.controller.select_sheet_variacao()
-        if self.controller.sheet_variacao is not None:
-            self.lb_sheet_variacao.config(
-                text=f'Planilha selecionada: {self.controller.sheet_variacao.basename()}'
-            )
-        self.on_file_loaded()
+        pass
 
     def back_page(self):
         self.func_go_page('/back')
 
     def init_ui_page(self):
         self.container1.pack(padx=2, pady=2, fill='x')
-        self.btn_sheet_variacao.pack(padx=2, pady=2, side=tk.LEFT)
-        self.lb_sheet_variacao.pack(padx=2, pady=2, expand=True, fill='x')
+        self.btn_read.pack(pady=10, side=tk.LEFT)
+        #self.btn_sheet_variacao.pack(padx=2, pady=2, side=tk.LEFT)
 
-        self.config_import.pack(fill='x', padx=5, pady=5)
-        self.btn_read.pack(pady=10)
-
+        self.config_import.pack(fill='x', padx=3, pady=2)
         # O DataSheetView deve ocupar o espaço restante
         self.container_sheet_view.pack(expand=True, fill='both', padx=2, pady=2)
-        self.data_view.pack(expand=True, fill='both', padx=5, pady=5)
+        self.data_view.pack(expand=True, fill='both', padx=2, pady=2)
 
     def load_data_to_view(self):
         config = self.config_import.get_import_config()

@@ -10,12 +10,13 @@ import app_variacao.soup_files as sp
 output_dir = sp.UserFileSystem().get_user_downloads().concat('output', create=True)
 sys.path.insert(0, MODULES_DIR)
 
+from app_variacao.documents.sheet.excel import ExcelLoad, ReadSheetExcel
+import pandas as pd
+
 
 def test():
-    from app_variacao.app import run_app, AppVariacao
-
-    app = AppVariacao()
-    run_app(app)
+    from app_variacao.__main__ import main as run
+    run()
 
 
 def main():

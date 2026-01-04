@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Literal
 
 from app_variacao.documents.erros import LoadWorkbookError
-from app_variacao.documents.sheet.types import SheetData, WorkbookData, SheetIndexNames
+from app_variacao.documents.sheet.types import SheetData, WorkbookData, IndexTables
 from app_variacao.types.core import ObjectAdapter
 
 CsvEncoding = Literal['utf-8', 'iso-8859-1']
@@ -19,7 +19,7 @@ class CsvLoad(ABC):
         pass
 
     @abstractmethod
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_sheet_index(self) -> IndexTables:
         pass
 
     @abstractmethod
@@ -27,7 +27,7 @@ class CsvLoad(ABC):
         pass
 
     def get_sheet_at(self, idx: int) -> SheetData:
-        idx_sheet_names: SheetIndexNames = self.get_sheet_index()
+        idx_sheet_names: IndexTables = self.get_sheet_index()
         name = idx_sheet_names[idx]
         return self.get_workbook_data()[name]
 
@@ -49,8 +49,8 @@ class CsvLoadPandas(CsvLoad):
     def hash(self) -> int:
         return hash(self.file_csv)
 
-    def get_sheet_index(self) -> SheetIndexNames:
-        sheet_index = SheetIndexNames()
+    def get_sheet_index(self) -> IndexTables:
+        sheet_index = IndexTables()
         sheet_index.add_index(0, "Sheet1")
         return sheet_index
 
@@ -88,7 +88,7 @@ class ReadSheetCsv(ObjectAdapter):
     def get_sheet(self, sheet_name: str | None = None) -> SheetData:
         return self.__reader.get_sheet(sheet_name)
 
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_sheet_index(self) -> IndexTables:
         return self.__reader.get_sheet_index()
 
     @classmethod

@@ -36,7 +36,12 @@ class RowSheetIterator(Iterator):
         return self.sheet.get_row(idx_value)
 
 
-class SheetIndexNames(dict[int, str]):
+class IndexTables(dict[int, str]):
+    """
+    Dicionário para enumerar os nomes das abas de uma planilha
+    sendo que as chaves são números inteiros (posição) e os valores
+    são strings (nome de cada aba).
+    """
 
     def __init__(self):
         super().__init__({})
@@ -62,9 +67,11 @@ class SheetIndexNames(dict[int, str]):
         return None
 
     def get_sheet_name_at(self, idx: int) -> str:
+        """Retorna o nome de uma aba a partir do index."""
         return self[idx]
 
     def get_sheet_names(self) -> list[str]:
+        """Retorna os nomes das planilhas"""
         return self.values()
 
     def get_first(self) -> str:
@@ -122,8 +129,7 @@ class SheetData(dict[str, list[str]]):
         self[head] = column
 
     def get_max_rows(self) -> int:
-        _keys = self.keys()
-        _name = _keys[0]
+        _name = self.keys()[0]
         return len(self[_name])
 
     def to_data_frame(self) -> pd.DataFrame:
@@ -142,23 +148,23 @@ class WorkbookData(dict[str, SheetData]):
 
     def __init__(self):
         super().__init__({})
-        self.__sheet_index_names: SheetIndexNames | None = None
+        self.__sheet_index_names: IndexTables | None = None
 
     def __repr__(self):
         return f"{__class__.__name__}() {super().__repr__()}"
 
-    def get_sheet_index_names(self) -> SheetIndexNames:
+    def get_sheet_index_names(self) -> IndexTables:
         """
         Dicionário com os nomes das planilhas apontando para os respetivos indices.
         :return: Dicionário com int, str
         """
         if self.__sheet_index_names is None:
-            self.__sheet_index_names = SheetIndexNames()
+            self.__sheet_index_names = IndexTables()
             for n, name in enumerate(self.keys()):
                 self.__sheet_index_names.add_index(n, name)
         return self.__sheet_index_names
 
-    def set_sheet_index_names(self, sheet_index_names: SheetIndexNames):
+    def set_sheet_index_names(self, sheet_index_names: IndexTables):
         self.__sheet_index_names = sheet_index_names
 
     def get_first(self) -> SheetData:

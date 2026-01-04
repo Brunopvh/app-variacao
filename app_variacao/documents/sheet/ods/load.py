@@ -5,7 +5,7 @@ import pandas as pd
 from typing import Any
 from app_variacao.documents.erros import *
 from app_variacao.documents.sheet.types import (
-    SheetData, SheetIndexNames, WorkbookData
+    SheetData, IndexTables, WorkbookData
 )
 from app_variacao.types.core import ObjectAdapter
 
@@ -24,7 +24,7 @@ class ODSLoad(ABC):
         pass
 
     @abstractmethod
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_sheet_index(self) -> IndexTables:
         pass
 
     @abstractmethod
@@ -32,7 +32,7 @@ class ODSLoad(ABC):
         pass
 
     def get_sheet_at(self, idx: int) -> SheetData:
-        idx_sheet_names: SheetIndexNames = self.get_sheet_index()
+        idx_sheet_names: IndexTables = self.get_sheet_index()
         name = idx_sheet_names[idx]
         return self.get_workbook_data()[name]
 
@@ -55,7 +55,7 @@ class ODSLoadPandas(ODSLoad):
     def hash(self) -> int:
         return hash(self.ods_file)
 
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_sheet_index(self) -> IndexTables:
         # Pandas suporta ODS via pd.ExcelFile ou pd.read_excel
         if self.__sheet_names is None:
             try:
@@ -66,7 +66,7 @@ class ODSLoadPandas(ODSLoad):
                 raise LoadWorkbookError(
                     f'{__class__.__name__} ODSLoadPandas (odfpy): {e}'
                 )
-        return SheetIndexNames.create_from_list(self.__sheet_names)
+        return IndexTables.create_from_list(self.__sheet_names)
 
     def get_workbook_data(self) -> WorkbookData:
         try:
@@ -110,7 +110,7 @@ class ReadSheetODS(ObjectAdapter):
     def get_sheet(self, sheet_name: str | None = None) -> SheetData:
         return self.__reader.get_sheet(sheet_name)
 
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_sheet_index(self) -> IndexTables:
         return self.__reader.get_sheet_index()
 
     @classmethod

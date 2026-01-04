@@ -3,7 +3,7 @@ from io import BytesIO
 from abc import ABC, abstractmethod
 from typing import Any
 import pandas as pd
-from app_variacao.documents.sheet.types import SheetData, WorkbookData, SheetIndexNames
+from app_variacao.documents.sheet.types import SheetData, WorkbookData, IndexTables
 from app_variacao.types.core import ObjectAdapter
 
 
@@ -14,15 +14,22 @@ class ExcelLoad(ABC):
         pass
 
     @abstractmethod
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_index_sheets(self) -> IndexTables:
         pass
 
     @abstractmethod
-    def get_workbook_data(self) -> WorkbookData:
+    def get_workbook_data(self, sheet_name: str = "ALL") -> WorkbookData:
+        """
+        Retorna todos os dados/DataFrames da planilha em formato
+        chave:valor (str:SheetData)
+        """
         pass
 
+    def get_sheet_names(self) -> list[str]:
+        return self.get_index_sheets().get_sheet_names()
+
     def get_sheet_at(self, idx: int) -> SheetData:
-        idx_sheet_names: SheetIndexNames = self.get_sheet_index()
+        idx_sheet_names: IndexTables = self.get_index_sheets()
         name = idx_sheet_names[idx]
         return self.get_workbook_data()[name]
 
@@ -41,17 +48,25 @@ class ExcelLoadPandas(ExcelLoad):
     def hash(self) -> int:
         return self.__hash
 
-    def get_sheet_index(self) -> SheetIndexNames:
+    def get_index_sheets(self) -> IndexTables:
         rd: pd.ExcelFile = pd.ExcelFile(self.xlsx_file)
         names = [str(x) for x in rd.sheet_names]
-        return SheetIndexNames.create_from_list(names)
+        return IndexTables.create_from_list(names)
 
-    def get_workbook_data(self) -> WorkbookData:
-        data: dict[Any, pd.DataFrame] = pd.read_excel(self.xlsx_file, sheet_name=None)
+    def get_workbook_data(self, sheet_name: str = "ALL") -> WorkbookData:
+        if (sheet_name is None) or (sheet_name == "ALL"):
+            # Ler todos os dados da planilha
+            data: dict[Any, pd.DataFrame] = pd.read_excel(self.xlsx_file, sheet_name=None)
+        else:
+            data: dict[str, pd.DataFrame] = {
+                sheet_name: pd.read_excel(self.xlsx_file, sheet_name=sheet_name)
+            }
+
         workbook_data = WorkbookData()
         for _key in data.keys():
-            df: pd.DataFrame = data[_key]
-            workbook_data.add_sheet(str(_key), SheetData.create_from_data(df))
+            workbook_data.add_sheet(
+                str(_key), SheetData.create_from_data(data[_key])
+            )
         return workbook_data
 
     def get_sheet_at(self, idx: int) -> SheetData:
@@ -73,8 +88,9 @@ class ReadSheetExcel(ObjectAdapter):
     def hash(self) -> int:
         return self.get_implementation().hash()
 
-    def get_workbook_data(self) -> WorkbookData:
-        return self.__reader.get_workbook_data()
+    def get_workbook_data(self, sheet_name: str = None) -> WorkbookData:
+        print(f'Lendo Excel aguarde...')
+        return self.__reader.get_workbook_data(sheet_name)
 
     def get_sheet_at(self, idx: int) -> SheetData:
         return self.__reader.get_sheet_at(idx)
@@ -82,8 +98,11 @@ class ReadSheetExcel(ObjectAdapter):
     def get_sheet(self, sheet_name: str | None = None) -> SheetData:
         return self.__reader.get_sheet(sheet_name)
 
-    def get_sheet_index(self) -> SheetIndexNames:
-        return self.__reader.get_sheet_index()
+    def get_index_sheets(self) -> IndexTables:
+        return self.__reader.get_index_sheets()
+
+    def get_sheet_names(self) -> list[str]:
+        return self.get_index_sheets().get_sheet_names()
 
     @classmethod
     def create_load_pandas(cls, file_excel: str | BytesIO) -> ReadSheetExcel:

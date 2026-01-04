@@ -20,19 +20,18 @@ class DataImportConfigView(Container):
         self.main_container.pack(fill='both', expand=True, padx=10, pady=10)
 
         # --- Seção de Seleção de Arquivo ---
-        self.row_file = ContainerH(self.main_container)
-        self.row_file.pack(fill='x', pady=5)
-
-        #self.btn_select = ttk.Button(self.row_file, text="Selecionar Arquivo", command=self.on_select_file)
-        #self.btn_select.pack(side='left', padx=5)
-
-        self.lbl_file_path = ttk.Label(self.row_file, text="Nenhum arquivo selecionado", wraplength=400)
-        self.lbl_file_path.pack(side='left', padx=5)
+        self.container_file = ContainerH(self.main_container)
+        self.container_file.pack(fill='x', pady=5)
+        self.btn_select_sheet = ttk.Button(
+            self.container_file, text='Selecionar Planilha', command=self.on_select_file
+        )
+        self.btn_select_sheet.pack(fill='x', pady=1, padx=1, side=tk.LEFT)
+        self.lbl_file_path = ttk.Label(self.container_file, text="Nenhum arquivo selecionado", wraplength=400)
+        self.lbl_file_path.pack(side='left', padx=2, pady=1)
 
         # --- Container Dinâmico para Opções ---
         self.options_container = ContainerV(self.main_container)
         self.options_container.pack(fill='both', expand=True, pady=10)
-
         # Variáveis de Configuração
         self.var_sep = tk.StringVar(value=";")
         self.var_encoding = tk.StringVar(value="utf-8")
@@ -68,8 +67,6 @@ class DataImportConfigView(Container):
         ttk.Label(row_sep, text="Separador:").pack(side='left', padx=5)
         comb_sep = ttk.Combobox(row_sep, textvariable=self.var_sep, values=[";", ",", "\\t", "|", "-"])
         comb_sep.pack(side='left')
-
-
         # Encoding
         row_enc = ContainerH(self.options_container)
         row_enc.pack(fill='x', pady=2)
@@ -81,7 +78,7 @@ class DataImportConfigView(Container):
     def _build_excel_options(self):
         ttk.Label(
             self.options_container, text="Selecione a Aba (Sheet):", font=('', 10, 'bold')
-        ).pack(anchor='w')
+        ).pack(anchor='w', side=tk.LEFT, pady=1, padx=2)
 
         try:
             # Obtém apenas os nomes das abas sem ler o conteúdo (rápido)
@@ -90,7 +87,7 @@ class DataImportConfigView(Container):
 
             # Criar um container horizontal para o label e o combobox
             container_row_sheet = ContainerH(self.options_container)
-            container_row_sheet.pack(fill='x', pady=2)
+            container_row_sheet.pack(fill='x', pady=2, side=tk.LEFT)
             ttk.Label(container_row_sheet, text="Planilha:").pack(side='left', padx=5)
 
             # Combobox para as abas
@@ -100,7 +97,7 @@ class DataImportConfigView(Container):
                 values=sheets,
                 state="readonly"  # Impede o usuário de digitar algo que não existe
             )
-            comb_sheets.pack(side='left', fill='x', expand=True, padx=5)
+            comb_sheets.pack(side='left', fill='x', expand=True, padx=3, pady=1)
             if sheets:
                 self.var_sheet_name.set(sheets[0])
         except Exception as e:
