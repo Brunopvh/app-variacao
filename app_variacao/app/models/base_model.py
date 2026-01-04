@@ -1,18 +1,11 @@
 from __future__ import annotations
 import json
-from typing import Any, TypedDict, Literal
-
-from app_variacao.documents.sheet.csv import CsvEncoding, ReadSheetCsv
-from app_variacao.documents.sheet.excel import ReadSheetExcel
+from typing import Any, TypedDict, Literal, Union
+from app_variacao.documents.sheet.csv import CsvEncoding
 from app_variacao.types.array import ArrayList, BaseDict
 from app_variacao.soup_files import JsonConvert
-from app_variacao.app.ui import (
-    MappingStyles, TypeMappingStylesDict,
-)
-from app_variacao.util import (
-    File, Directory, EnumDocFiles, UserAppDir
-)
-
+from app_variacao.app.ui import MappingStyles, TypeMappingStylesDict
+from app_variacao.util import File, Directory, EnumDocFiles, UserAppDir
 from tkinter import filedialog
 import os.path
 
@@ -39,7 +32,7 @@ class PreferencesFileDialog(BaseDict):
 
     _instance_prefs = None  # Singleton
     keys_file_dialog: tuple = (
-        'initial_output_dir', 'initial_input_dir', 'last_dir'
+        'initial_output_dir', 'initial_input_dir', 'last_dir', 'last_input_dir', 'last_output_dir'
     )
 
     def __new__(cls, *args, **kwargs):
@@ -110,9 +103,10 @@ class PreferencesFileDialog(BaseDict):
 
 ExtensionSheet = Literal['.xlsx', '.ods', '.csv', '.txt']
 CsvSep = Literal[',', ';', '\t', '|', '_']
+KeyCsvImport = Literal['extension', 'path', 'sep', 'encoding']
 
 
-class TypeImportSheet(TypedDict):
+class TypeImportSheet(TypedDict, total=False):
 
     extension: ExtensionSheet
     path: File
@@ -138,6 +132,22 @@ class PreferencesImportSheet(BaseDict):
         self['sep'] = ";"
         self['encoding'] = 'utf-8'
 
+    @classmethod
+    def format_dict(cls, data: dict[str, Any]) -> TypeImportSheet:
+        final: TypeImportSheet = dict()
+        key: KeyCsvImport
+        value: str
+        for key, value in data.items():
+            if key == 'extension':
+                final[key] = value
+            elif key == 'sep':
+                final[key] = value
+            elif key == 'encoding':
+                final[key] = value
+            elif key == 'path':
+                final[key] = File(value)
+        return final
+
     def merge(self, data: TypeImportSheet) -> None:
         for key, value in data.items():
             self[key] = value
@@ -155,15 +165,18 @@ class PreferencesImportSheet(BaseDict):
 #==============================================================#
 # Configurações gerais do APP
 #==============================================================#
-KeyUserConfig = Literal['prefs_file_dialog', 'app_styles', 'work_dir']
+KeyUserConfig = Literal['prefs_file_dialog', 'app_styles', 'work_dir', 'sheet_variacao']
 
 
 class TypeConfApp(TypedDict, total=False):
+    """
+    Tipos para o dicionário de configuração geral.
+    """
 
     prefs_file_dialog: PreferencesFileDialog
     app_styles: MappingStyles
     work_dir: Directory
-    import_sheet: TypeImportSheet
+    sheet_variacao: TypeImportSheet
 
 
 class UserPreferences(BaseDict):
@@ -186,7 +199,7 @@ class UserPreferences(BaseDict):
         self['prefs_file_dialog'] = PreferencesFileDialog.create_default()
         self['app_styles'] = MappingStyles.create_default()
         self['work_dir'] = _app_dir.workspaceDirApp
-        self['import_sheet'] = PreferencesImportSheet()
+        self['sheet_variacao'] = PreferencesImportSheet()
 
     def __repr__(self):
         return f"{self.__class__.__name__}()\n{self.values()}"
@@ -194,33 +207,12 @@ class UserPreferences(BaseDict):
     def get_pref_file_dialog(self) -> PreferencesFileDialog:
         return self['prefs_file_dialog']
 
-    def get_initial_output_dir(self) -> Directory:
-        return self['prefs_file_dialog']['initial_output_dir']
-
-    def set_initial_output_dir(self, new: Directory) -> None:
-        if not isinstance(new, Directory):
-            raise TypeError('initial_output_dir must be a Directory')
-        self['prefs_file_dialog']['initial_output_dir'] = new
-
-    def get_initial_input_dir(self) -> Directory:
-        return self['prefs_file_dialog']['initial_input_dir']
-
-    def set_initial_input_dir(self, new: Directory) -> None:
-        if not isinstance(new, Directory):
-            raise TypeError('initial_input_dir must be a Directory')
-        self['prefs_file_dialog']['initial_input_dir'] = new
-
-    def set_app_styles(self, styles: MappingStyles):
-        if not isinstance(styles, MappingStyles):
-            raise ValueError(f'{__class__.__name__} styles deve ser MappingStyles(), não {type(styles)}')
-        self['app_styles'] = styles
-
     def get_app_styles(self) -> MappingStyles:
         return self['app_styles']
 
     def to_dict(self) -> dict[str, Any]:
         data = {}
-        k: KeyFileDialog
+        k: KeyUserConfig
         v: Any
         for k, v in self.items():
             # métodos absolute() devem ser salvos como strings.
@@ -230,20 +222,21 @@ class UserPreferences(BaseDict):
                 data[k] = v.to_dict()
             elif k == 'prefs_file_dialog':
                 data[k] = v.to_dict()
-            elif k == 'import_sheet':
+            elif k == 'sheet_variacao':
                 data[k] = v.to_dict()
             else:
                 data[k] = v
         return data
 
     def merge_dict(self, merge: TypeConfApp) -> None:
+        k: KeyUserConfig
         for k, v in merge.items():
             if k == 'app_styles':
-                self.set_app_styles(v)
+                self['app_styles'] = v
             elif k == 'prefs_file_dialog':
                 self['prefs_file_dialog'] = v
-            elif k == 'import_sheet':
-                self['import_sheet'] = v
+            elif k == 'sheet_variacao':
+                self['sheet_variacao'] = v
             else:
                 self[k] = v
 
@@ -269,8 +262,11 @@ class UserPreferences(BaseDict):
                     final['work_dir'] = Directory(value_conf)
                 elif isinstance(value_conf, Directory):
                     final['work_dir'] = value_conf
-            elif key == 'import_sheet':
-                final['import_sheet'] = value_conf
+            elif key == 'sheet_variacao':
+                fmt_conf = PreferencesImportSheet.format_dict(value_conf)
+                pref_import = PreferencesImportSheet()
+                pref_import.merge(fmt_conf)
+                final['sheet_variacao'] = pref_import
         return final
 
 
@@ -311,7 +307,6 @@ class ModelPreferences(object):
 
     def _create_prefs(self) -> None:
         self._user_prefs = UserPreferences()
-
         if self.file_prefs.exists():
             # Criar preferências a partir do arquivo de configuração
             content_file_config: dict[str, Any] = self.load_file_prefs()
@@ -331,14 +326,14 @@ class AppFileDialog(object):
         return cls._instance_file_dialog
 
     def __init__(self) -> None:
-        self.prefs: UserPreferences = ModelPreferences().get_preferences()
+        self.prefs: TypeConfFileDialog = ModelPreferences().get_preferences().get_pref_file_dialog()
         self.title_pop_up_files: str = 'Selecione um arquivo'
         self.pop_up_text_filetypes: list[tuple[str, str]] = [("Todos os arquivos", "*"), ]
         self.default_extension = '.*'
 
     def _config_pop_up_open_filename(self, file_ext_type: EnumDocFiles) -> None:
         """
-            Caixa de dialogo para selecionar um arquivo
+            Caixa de diálogo para selecionar um arquivo
         """
         self.title_pop_up_files = 'Selecione um arquivo'
         if file_ext_type == EnumDocFiles.CSV:
@@ -397,13 +392,13 @@ class AppFileDialog(object):
         print(f'{__class__.__name__}  | {file_ext_type}')
         filename: str = filedialog.askopenfilename(
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_initial_input_dir().absolute(),
+            initialdir=self.prefs["initial_input_dir"].absolute(),
             filetypes=self.pop_up_text_filetypes,
         )
         if not filename:
             return None
         _dir_name = os.path.dirname(filename)
-        self.prefs.set_initial_input_dir(Directory(_dir_name))
+        self.prefs['initial_input_dir'] = Directory(_dir_name)
         return filename
 
     def open_files_name(self, file_ext_type: EnumDocFiles = EnumDocFiles.ALL) -> tuple:
@@ -413,18 +408,18 @@ class AppFileDialog(object):
         self._config_pop_up_open_filename(file_ext_type)
         files = filedialog.askopenfilenames(
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_initial_input_dir().absolute(),
+            initialdir=self.prefs['initial_input_dir'].absolute(),
             filetypes=self.pop_up_text_filetypes,
         )
         if (files == "") or (len(files) < 0):
             return tuple()
         _dir_name = os.path.abspath(os.path.dirname(files[0]))
-        self.prefs.set_initial_input_dir(Directory(_dir_name))
+        self.prefs['initial_input_dir'] = Directory(_dir_name)
         return files
 
     def open_file_sheet(self) -> str | None:
         """
-            Caixa de dialogo para selecionar um arquivo CSV/TXT/XLSX/ODS
+            Caixa de diálogo para selecionar um arquivo CSV/TXT/XLSX/ODS
         """
         return self.open_filename(EnumDocFiles.SHEET)
 
@@ -443,9 +438,9 @@ class AppFileDialog(object):
     def open_folder(self, action_input=True) -> str | None:
         """Selecionar uma pasta"""
         if action_input:
-            _initial: str = self.prefs.get_initial_input_dir().absolute()
+            _initial: str = self.prefs['initial_input_dir'].absolute()
         else:
-            _initial: str = self.prefs.get_initial_output_dir().absolute()
+            _initial: str = self.prefs['initial_output_dir'].absolute()
 
         _select_dir: str = filedialog.askdirectory(
             initialdir=_initial,
@@ -456,9 +451,9 @@ class AppFileDialog(object):
 
         _parent_dir = os.path.abspath(_select_dir)
         if action_input:
-            self.prefs.set_initial_input_dir(Directory(_parent_dir))
+            self.prefs['initial_input_dir'] = Directory(_parent_dir)
         else:
-            self.prefs.set_initial_output_dir(Directory(_parent_dir))
+            self.prefs['initial_output_dir'] = Directory(_parent_dir)
         return _select_dir
 
     def save_file(self, type_file: EnumDocFiles = EnumDocFiles.ALL_DOCUMENTS) -> File | None:
@@ -469,12 +464,12 @@ class AppFileDialog(object):
             defaultextension=self.default_extension,
             filetypes=self.pop_up_text_filetypes,  # Tipos de arquivos suportados
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_initial_output_dir().absolute(),
+            initialdir=self.prefs['initial_output_dir'].absolute(),
         )
 
         if not dir_path:
             return None
-        self.prefs.set_initial_output_dir(Directory(dir_path))
+        self.prefs['initial_output_dir'] = Directory(dir_path)
         return File(dir_path)
 
 
@@ -484,7 +479,7 @@ class ModelFileDialog(BaseDict):
         super().__init__(values)
         self._file_dialog = AppFileDialog()
 
-    def get_prefs(self) -> UserPreferences:
+    def get_prefs(self) -> PreferencesFileDialog:
         return self._file_dialog.prefs
 
     def select_file_disk(self, f_type: EnumDocFiles) -> File | None:
@@ -540,3 +535,9 @@ class ModelExportJson(object):
         except Exception as err:
             print(f'{__class__.__name__} Falha: {err}')
 
+
+__all__ = [
+    'KeyUserConfig', 'KeyFileDialog', 'TypeConfFileDialog', 'PreferencesFileDialog',
+    'ExtensionSheet', 'CsvSep', 'TypeImportSheet', 'PreferencesImportSheet', 'TypeConfApp',
+    'UserPreferences', 'ModelPreferences', 'ModelFileDialog', 'ModelExportJson'
+]

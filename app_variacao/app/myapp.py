@@ -23,7 +23,7 @@ class AppVariacao(MyApp):
         self.menu_bar = MenuBar(app=self)
 
         # Alterar os temas dos widgets conforme as configurações.
-        map_styles = self.controller_prefs.get_prefs().get_app_styles()
+        map_styles = self.controller_prefs.get_user_prefs().get_app_styles()
         msg = MessageNotification(
             message_type=EnumMessages.MSG_UPDATE_STYLE,
             provider=map_styles,

@@ -91,7 +91,7 @@ class MenuBar(object):
 
         # Iniciar o tema
         self.set_theme_menu_bar(
-            self._controller_conf.get_prefs().get_app_styles().get_style_menu_bar()
+            self._controller_conf.get_user_prefs().get_app_styles().get_style_menu_bar()
         )
 
         # Submenu para alterar o estilo da barra/menu.

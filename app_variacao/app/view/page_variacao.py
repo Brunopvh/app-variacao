@@ -32,16 +32,11 @@ class PageVariacao(BasePage):
         # Botão para processar/ler
         self.btn_read = ttk.Button(self.container1, text="Carregar Dados", command=self.load_data_to_view)
         self.add_btn(self.btn_read)
-        #self.btn_sheet_variacao = ttk.Button(
-        #    self.container1, text='Selecionar Planilha',
-        #    command=self.load_data_to_view, style=EnumStyles.BUTTON_PURPLE_LIGHT.value,)
-        #self.add_btn(self.btn_sheet_variacao)
 
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
         # =============================================================#
         self.config_import: DataImportConfigView = DataImportConfigView(self.container1)
-        #self.btn_sheet_variacao.configure(command=self.config_import.on_select_file)
 
         # =============================================================#
         # Container 3 - Exibição dos dados
@@ -49,8 +44,6 @@ class PageVariacao(BasePage):
         self.container_sheet_view = ContainerH(self.frame_master)
         self.data_view: DataSheetView = DataSheetView(self.container_sheet_view)
         self.add_frame(self.data_view)
-        if self.controller.sheet_variacao is not None:
-            self.on_file_loaded()
 
     def select_sheet(self):
         pass
@@ -61,16 +54,19 @@ class PageVariacao(BasePage):
     def init_ui_page(self):
         self.container1.pack(padx=2, pady=2, fill='x')
         self.btn_read.pack(pady=10, side=tk.LEFT)
-        #self.btn_sheet_variacao.pack(padx=2, pady=2, side=tk.LEFT)
 
         self.config_import.pack(fill='x', padx=3, pady=2)
         # O DataSheetView deve ocupar o espaço restante
         self.container_sheet_view.pack(expand=True, fill='both', padx=2, pady=2)
         self.data_view.pack(expand=True, fill='both', padx=2, pady=2)
+        if self.controller.get_path_sheet_variacao() is not None:
+            if self.controller.get_path_sheet_variacao().exists():
+                self.config_import._update_options_ui()
 
     def load_data_to_view(self):
         config = self.config_import.get_import_config()
         if not config:
+            show_info('Selecione uma planilha para prosseguir!')
             return
 
         try:
@@ -87,26 +83,28 @@ class PageVariacao(BasePage):
             show_alert(f"Erro ao ler arquivo: {e}")
 
     def on_file_loaded(self):
+        """
+        Carregar o DataFrame a partir da planilha escolhida.
+        """
         # Exemplo de como carregar os dados após selecionar o arquivo
-        if self.controller.sheet_variacao is None:
+        if self.controller.get_path_sheet_variacao() is None:
             return
-        if not self.controller.sheet_variacao.exists():
+        if not self.controller.get_path_sheet_variacao().exists():
             return
 
         df: pd.DataFrame = pd.DataFrame()
-        if self.controller.sheet_variacao.is_csv():
+        if self.controller.get_path_sheet_variacao().is_csv():
             rd = ReadSheetCsv.create_load_pandas(
-                self.controller.sheet_variacao.absolute(),
+                self.controller.get_path_sheet_variacao().absolute(),
                 encoding='utf-8',
             )
             df = rd.get_workbook_data().get_first().to_data_frame()
-        elif self.controller.sheet_variacao.is_excel():
-            rd = ReadSheetExcel.create_load_pandas(self.controller.sheet_variacao.absolute())
+        elif self.controller.get_path_sheet_variacao().is_excel():
+            rd = ReadSheetExcel.create_load_pandas(self.controller.get_path_sheet_variacao().absolute())
             df = rd.get_workbook_data().get_first().to_data_frame()
-        elif self.controller.sheet_variacao.is_ods():
-            rd = ReadSheetODS.create_load_pandas(self.controller.sheet_variacao.absolute())
+        elif self.controller.get_path_sheet_variacao().is_ods():
+            rd = ReadSheetODS.create_load_pandas(self.controller.get_path_sheet_variacao().absolute())
             df = rd.get_workbook_data().get_first().to_data_frame()
         else:
             return
         self.data_view.load_dataframe(df)
-
