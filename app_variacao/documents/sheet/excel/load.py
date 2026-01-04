@@ -51,7 +51,18 @@ class ExcelLoadPandas(ExcelLoad):
     def get_index_sheets(self) -> IndexTables:
         rd: pd.ExcelFile = pd.ExcelFile(self.xlsx_file)
         names = [str(x) for x in rd.sheet_names]
+        print('*********************************************')
+        print(names)
+        print('*********************************************')
         return IndexTables.create_from_list(names)
+
+    def get_sheet_names(self) -> list[str]:
+        rd: pd.ExcelFile = pd.ExcelFile(self.xlsx_file)
+        names = [str(x) for x in rd.sheet_names]
+        print('*********************************************')
+        print(names)
+        print('*********************************************')
+        return names
 
     def get_workbook_data(self, sheet_name: str = "ALL") -> WorkbookData:
         if (sheet_name is None) or (sheet_name == "ALL"):
@@ -102,7 +113,7 @@ class ReadSheetExcel(ObjectAdapter):
         return self.__reader.get_index_sheets()
 
     def get_sheet_names(self) -> list[str]:
-        return self.get_index_sheets().get_sheet_names()
+        return self.__reader.get_sheet_names()
 
     @classmethod
     def create_load_pandas(cls, file_excel: str | BytesIO) -> ReadSheetExcel:

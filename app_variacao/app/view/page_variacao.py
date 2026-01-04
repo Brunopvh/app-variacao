@@ -4,12 +4,11 @@ import tkinter as tk
 from app_variacao.app.ui import (
     BasePage, BaseWindow, ContainerH, EnumStyles, show_alert, show_info
 )
-from app_variacao.app.controllers import (
-    ControllerViewVariacao
-)
+from app_variacao.app.controllers import ControllerViewVariacao
+from app_variacao.app.models import TypeImportSheet
 from app_variacao.app.view.views_widgets import DataSheetView, DataImportConfigView
 from app_variacao.documents.sheet import (
-    ReadSheetCsv, ReadSheetODS, ReadSheetExcel
+    ReadSheetCsv, ReadSheetODS, ReadSheetExcel, WorkbookData
 )
 import pandas as pd
 
@@ -36,7 +35,7 @@ class PageVariacao(BasePage):
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
         # =============================================================#
-        self.config_import: DataImportConfigView = DataImportConfigView(self.container1)
+        self.container_import: DataImportConfigView = DataImportConfigView(self.container1)
 
         # =============================================================#
         # Container 3 - Exibição dos dados
@@ -45,9 +44,6 @@ class PageVariacao(BasePage):
         self.data_view: DataSheetView = DataSheetView(self.container_sheet_view)
         self.add_frame(self.data_view)
 
-    def select_sheet(self):
-        pass
-
     def back_page(self):
         self.func_go_page('/back')
 
@@ -55,56 +51,36 @@ class PageVariacao(BasePage):
         self.container1.pack(padx=2, pady=2, fill='x')
         self.btn_read.pack(pady=10, side=tk.LEFT)
 
-        self.config_import.pack(fill='x', padx=3, pady=2)
+        self.container_import.pack(fill='x', padx=3, pady=2)
         # O DataSheetView deve ocupar o espaço restante
         self.container_sheet_view.pack(expand=True, fill='both', padx=2, pady=2)
         self.data_view.pack(expand=True, fill='both', padx=2, pady=2)
-        if self.controller.get_path_sheet_variacao() is not None:
-            if self.controller.get_path_sheet_variacao().exists():
-                self.config_import._update_options_ui()
 
     def load_data_to_view(self):
-        config = self.config_import.get_import_config()
-        if not config:
+        """
+        Ler o DataFrame da planilha selecionada e enviar ao DataSheetView()
+        """
+        config: dict[str, str] = self.container_import.get_import_config()
+        if config is None:
             show_info('Selecione uma planilha para prosseguir!')
             return
 
         try:
+            df: pd.DataFrame
             if (config['extension'] == '.csv') or (config['extension'] == '.txt'):
-                df = pd.read_csv(
-                    config['path'].absolute(), sep=config['sep'], encoding=config['encoding']
+                rd = ReadSheetCsv.create_load_pandas(
+                    config['path'].absolute(), delimiter=config['sep'], encoding=config['encoding']
                 )
-            else:
-                df = pd.read_excel(
-                    config['path'].absolute(), sheet_name=config['sheet_name']
-                )
+                df = rd.get_workbook_data().get_first().to_data_frame()
+            elif config['extension'] == '.xlsx':
+                rd = ReadSheetExcel.create_load_pandas(config['path'].absolute())
+                df = rd.get_workbook_data(config['sheet_name']).get_first().to_data_frame()
+            elif config['extension'] == '.ods':
+                rd = ReadSheetODS.create_load_pandas(config['path'].absolute())
+                df = rd.get_workbook_data().get_sheet(config['sheet_name']).to_data_frame()
             self.data_view.load_dataframe(df)
         except Exception as e:
+            print('==================================================')
+            print(e)
             show_alert(f"Erro ao ler arquivo: {e}")
 
-    def on_file_loaded(self):
-        """
-        Carregar o DataFrame a partir da planilha escolhida.
-        """
-        # Exemplo de como carregar os dados após selecionar o arquivo
-        if self.controller.get_path_sheet_variacao() is None:
-            return
-        if not self.controller.get_path_sheet_variacao().exists():
-            return
-
-        df: pd.DataFrame = pd.DataFrame()
-        if self.controller.get_path_sheet_variacao().is_csv():
-            rd = ReadSheetCsv.create_load_pandas(
-                self.controller.get_path_sheet_variacao().absolute(),
-                encoding='utf-8',
-            )
-            df = rd.get_workbook_data().get_first().to_data_frame()
-        elif self.controller.get_path_sheet_variacao().is_excel():
-            rd = ReadSheetExcel.create_load_pandas(self.controller.get_path_sheet_variacao().absolute())
-            df = rd.get_workbook_data().get_first().to_data_frame()
-        elif self.controller.get_path_sheet_variacao().is_ods():
-            rd = ReadSheetODS.create_load_pandas(self.controller.get_path_sheet_variacao().absolute())
-            df = rd.get_workbook_data().get_first().to_data_frame()
-        else:
-            return
-        self.data_view.load_dataframe(df)

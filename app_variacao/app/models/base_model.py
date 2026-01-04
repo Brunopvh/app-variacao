@@ -103,7 +103,7 @@ class PreferencesFileDialog(BaseDict):
 
 ExtensionSheet = Literal['.xlsx', '.ods', '.csv', '.txt']
 CsvSep = Literal[',', ';', '\t', '|', '_']
-KeyCsvImport = Literal['extension', 'path', 'sep', 'encoding']
+KeyCsvImport = Literal['extension', 'path', 'sep', 'encoding', 'sheet_name']
 
 
 class TypeImportSheet(TypedDict, total=False):
@@ -203,6 +203,9 @@ class UserPreferences(BaseDict):
 
     def __repr__(self):
         return f"{self.__class__.__name__}()\n{self.values()}"
+
+    def get_prefs_import_sheet(self) -> PreferencesImportSheet:
+        return self['sheet_variacao']
 
     def get_pref_file_dialog(self) -> PreferencesFileDialog:
         return self['prefs_file_dialog']

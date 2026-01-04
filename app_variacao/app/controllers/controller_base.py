@@ -1,7 +1,7 @@
 from __future__ import annotations
 from app_variacao.app.models import (
     ModelFileDialog, ModelExportJson, ModelPreferences, TypeConfApp,
-    TypeImportSheet
+    TypeImportSheet, UserPreferences, PreferencesImportSheet
 )
 from app_variacao.app.ui import MappingStyles
 from app_variacao.soup_files import EnumDocFiles, File, Directory
@@ -59,10 +59,10 @@ class ControllerPrefs(ControllerVariacao):
         self._initialized = True
         self.model: ModelPreferences = ModelPreferences()
 
-    def get_user_prefs(self) -> TypeConfApp:
+    def get_user_prefs(self) -> UserPreferences:
         return self.model.get_preferences()
 
-    def get_prefs_import_sheet(self) -> TypeImportSheet:
+    def get_prefs_import_sheet(self) -> PreferencesImportSheet:
         return self.get_user_prefs()['sheet_variacao']
 
     def get_prefs_styles(self) -> MappingStyles:
