@@ -48,6 +48,7 @@ class ConfigApp(TypedDict, total=False):
     file_dialog: ConfigFileDialog
     import_csv: ConfigImportCsv
     import_excel: ConfigImportExcel
+    app_styles: dict[str, Any]
 
 
 #==============================================================#
@@ -153,6 +154,9 @@ class PrefImportCsv(InterfaceCreateConfig):
         self._config['extension'] = '.csv'
         self._config['sep'] = ";"
         self._config['encoding'] = 'utf-8'
+
+    def get_config(self) -> ConfigImportCsv:
+        return self._config
 
     def create_from_dict(self, data: dict[str, Any]) -> ConfigImportCsv:
         final: ConfigImportCsv = dict()

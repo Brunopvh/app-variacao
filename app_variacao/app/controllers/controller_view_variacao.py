@@ -1,5 +1,5 @@
 from __future__ import annotations
-from app_variacao.app.app_types import ConfigImportCsv, PrefImportCsv
+from app_variacao.app.app_types import PrefImportCsv
 from app_variacao.documents import CsvSeparator
 from app_variacao.app.controllers.controller_base import (
     ControllerPopUpFiles, ControllerVariacao
@@ -15,32 +15,33 @@ class ControllerViewVariacao(ControllerVariacao):
 
     def __init__(self):
         super().__init__()
+        self._pref_import_csv = PrefImportCsv()
         self._controller_popup_files = ControllerPopUpFiles()
         self.model_prefs = ModelPreferences()
 
     def set_csv_separator(self, sep: CsvSeparator):
-        self.get_prefs_import_sheet()['sep'] = sep
+        self._pref_import_csv.get_config()['sep'] = sep
 
     def get_csv_separator(self) -> CsvSeparator:
-        return self.get_prefs_import_sheet()['sep']
+        return self._pref_import_csv.get_config()['sep']
 
     def get_sheet_encoding(self) -> CsvEncoding:
-        return self.get_prefs_import_sheet()['encoding']
+        return self._pref_import_csv.get_config()['encoding']
 
     def set_sheet_encoding(self, encoding: CsvEncoding):
-        self.get_prefs_import_sheet()['encoding'] = encoding
+        self._pref_import_csv.get_config()['encoding'] = encoding
 
     def get_prefs_import_sheet(self) -> PrefImportCsv:
-        return self.model_prefs.get_preferences_app().get_prefs_import_sheet()
+        return self._pref_import_csv
 
     def get_path_sheet_variacao(self) -> File | None:
-        if 'path' in self.get_prefs_import_sheet().keys():
-            return self.get_prefs_import_sheet()['path']
+        if 'path' in self._pref_import_csv.get_config().keys():
+            return self._pref_import_csv.get_config()['path']
         return None
 
     def set_path_sheet_variacao(self, p: File):
-        self.get_prefs_import_sheet()['path'] = p
-        self.get_prefs_import_sheet()['extension'] = p.extension().lower()
+        self._pref_import_csv.get_config()['path'] = p
+        self._pref_import_csv.get_config()['extension'] = p.extension().lower()
 
     def get_sheet_extension(self) -> str | None:
         if self.get_path_sheet_variacao() is None:
@@ -50,7 +51,7 @@ class ControllerViewVariacao(ControllerVariacao):
     def get_sheet_names(self) -> list[str] | None:
         _extension = self.get_sheet_extension()
         _sheet_names = None
-        print('Lendo Sheet Names')
+
         if (_extension == '.txt') or (_extension == '.csv'):
             return None
         elif _extension == '.xlsx':
@@ -73,6 +74,6 @@ class ControllerViewVariacao(ControllerVariacao):
         f: File | None = self._controller_popup_files.get_sheet()
         if f is None:
             return
-        self.get_prefs_import_sheet()['path'] = f
-        self.get_prefs_import_sheet()['extension'] = f.extension().lower()
+        self._pref_import_csv.get_config()['path'] = f
+        self._pref_import_csv.get_config()['extension'] = f.extension().lower()
         self.model_prefs.save_prefs()  # Salvar no disco após a seleção

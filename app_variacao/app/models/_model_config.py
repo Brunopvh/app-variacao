@@ -5,6 +5,7 @@ from app_variacao.app.app_types import (
     KeyFileDialog, KeyConfUser, ExtensionSheet, InterfaceCreateConfig,
     PrefImportCsv, PrefFileDialog, PreferencesApp, KeyConfImportCsv,
 )
+from app_variacao.app.ui import MappingStyles
 from app_variacao.soup_files import (
     UserAppDir, Directory, File, ExtensionFiles, EnumDocFiles,
     JsonConvert, JsonData
@@ -32,6 +33,7 @@ class ModelPreferences(object):
         self._prefs_app: PreferencesApp = None
         self._pref_file_dialog = PrefFileDialog()
         self._pref_import_csv = PrefImportCsv()
+        self._pref_styles = MappingStyles().create_default()
 
     def get_preferences_app(self) -> PreferencesApp:
         if self._prefs_app is None:
@@ -74,6 +76,7 @@ class ModelPreferences(object):
         self._prefs_app.get_config()['file_dialog'] = cfg_dialog
         self._prefs_app.get_config()['work_dir'] = _app_dir.workspaceDirApp
         self._prefs_app.get_config()['import_excel'] = ConfigImportExcel()
+        self._prefs_app.get_config()['app_styles'] = self._pref_styles
 
         self._pref_file_dialog.merge(self._prefs_app.get_config()['file_dialog'])
         self._pref_import_csv.merge(self._prefs_app.get_config()['import_csv'])

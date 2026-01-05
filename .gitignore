@@ -5,7 +5,7 @@ app_variacao/soup_files/__pycache__/
 app_variacao/util/__pycache__/
 app_variacao/app/__pycache__/
 app_variacao/app/view/__pycache__/
-app_variacao/types/__pycache__/
+app_variacao/documents/types/__pycache__/
 app_variacao/app/controllers/__pycache__/
 .venv
 .idea/

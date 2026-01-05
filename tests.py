@@ -17,18 +17,8 @@ import pandas as pd
 def test():
     from app_variacao.__main__ import main as run
     from typing import Literal
-    #run()
+    run()
 
-    from app_variacao.app.app_types._config import (
-        ConfigApp, PrefFileDialog, PrefImportCsv, PreferencesApp
-    )
-    from app_variacao.app.models import ModelPreferences
-
-    cfg = ModelPreferences()
-    c = PrefFileDialog()
-    print(c.get_config())
-    print(cfg.get_preferences_app().get_config()['import_csv']['encoding'])
-    print(c.get_config())
 
 
 def main():

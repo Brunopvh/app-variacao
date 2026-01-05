@@ -78,7 +78,7 @@ class MenuBar(object):
         self.index_work_dir: int = self.add_item_menu(
             name='Pasta de trabalho: ',
             submenu=self.menu_config,
-            tooltip=self._controller_conf.get_work_dir_app(),
+            tooltip=self._controller_conf.get_work_dir_app().absolute(),
             cmd=lambda: self.change_work_dir(),
         )
 
@@ -91,7 +91,7 @@ class MenuBar(object):
 
         # Iniciar o tema
         self.set_theme_menu_bar(
-            self._controller_conf.get_user_prefs().get_app_styles().get_style_menu_bar()
+            self._controller_conf.get_user_prefs().get_config()['app_styles'].get_style_menu_bar()
         )
 
         # Submenu para alterar o estilo da barra/menu.

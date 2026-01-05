@@ -57,21 +57,23 @@ class ControllerPrefs(ControllerVariacao):
             return
         self._initialized = True
         self.model: ModelPreferences = ModelPreferences()
+        self._pref_import_csv = PrefImportCsv()
+        self._pref_styles = MappingStyles().create_default()
 
     def get_user_prefs(self) -> PreferencesApp:
         return self.model.get_preferences_app()
 
     def get_prefs_import_sheet(self) -> PrefImportCsv:
-        return self.get_user_prefs()['sheet_variacao']
+        return self._pref_import_csv
 
     def get_prefs_styles(self) -> MappingStyles:
-        return self.get_user_prefs()['app_styles']
+        return self._pref_styles
 
-    def get_work_dir_app(self) -> str:
-        return self.model.get_preferences_app()['work_dir']
+    def get_work_dir_app(self) -> Directory:
+        return self.model.get_preferences_app().get_config()['work_dir']
 
     def set_work_dir_app(self, d: Directory):
-        self.get_user_prefs()['work_dir'] = d
+        self.get_user_prefs().get_config()['work_dir'] = d
         self.save_config()
 
     def get_file_config(self) -> File:
@@ -101,6 +103,3 @@ class ControllerPopUpFiles(ControllerVariacao):
 
     def get_sheet(self) -> File | None:
         return self.model.select_file_disk(EnumDocFiles.SHEET)
-
-
-
