@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Generic, TypeVar, TypeAlias, Union, Literal, TypedDict
-from app_variacao.types import BaseDict
+from app_variacao.documents.types import BaseDict
 
 
 class EnumStyles(Enum):

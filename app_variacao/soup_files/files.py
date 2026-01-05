@@ -15,6 +15,7 @@ KERNEL_TYPE = platform.system()
 
 
 class ExtensionFiles(Enum):
+
     PNG = '.png'
     JPG = '.jpg'
     JPEG = '.jpeg'
@@ -23,6 +24,7 @@ class ExtensionFiles(Enum):
     XLSX = '.xlsx'
     XLS = '.xls'
     CSV = '.csv'
+    TXT = '.txt'
     ODS = '.ods'
     JSON = '.json'
 

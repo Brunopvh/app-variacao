@@ -5,9 +5,9 @@ from app_variacao.app.ui import (
     BasePage, BaseWindow, ContainerH, EnumStyles, show_alert, show_info
 )
 from app_variacao.app.controllers import ControllerViewVariacao
-from app_variacao.app.models import TypeImportSheet
+from app_variacao.app.models import ConfigImportCsv
 from app_variacao.app.view.views_widgets import DataSheetView, DataImportConfigView
-from app_variacao.documents.sheet import (
+from app_variacao.documents import (
     ReadSheetCsv, ReadSheetODS, ReadSheetExcel, WorkbookData
 )
 import pandas as pd

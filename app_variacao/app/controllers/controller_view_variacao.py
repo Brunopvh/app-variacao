@@ -1,11 +1,13 @@
 from __future__ import annotations
+from app_variacao.app.app_types import ConfigImportCsv, PrefImportCsv
+from app_variacao.documents import CsvSeparator
 from app_variacao.app.controllers.controller_base import (
-    ControllerPopUpFiles, ControllerVariacao, TypeImportSheet
+    ControllerPopUpFiles, ControllerVariacao
 )
 from app_variacao.app.models import ModelPreferences
-from app_variacao.app.models import PreferencesImportSheet, ExtensionSheet, CsvSep
-from app_variacao.documents.sheet import ReadSheetExcel, ReadSheetODS, ReadSheetCsv, WorkbookData
-from app_variacao.documents.sheet.csv import CsvEncoding
+from app_variacao.documents import (
+    ReadSheetExcel, ReadSheetODS, CsvEncoding
+)
 from app_variacao.util import File
 
 
@@ -16,10 +18,10 @@ class ControllerViewVariacao(ControllerVariacao):
         self._controller_popup_files = ControllerPopUpFiles()
         self.model_prefs = ModelPreferences()
 
-    def set_csv_separator(self, sep: CsvSep):
+    def set_csv_separator(self, sep: CsvSeparator):
         self.get_prefs_import_sheet()['sep'] = sep
 
-    def get_csv_separator(self) -> CsvSep:
+    def get_csv_separator(self) -> CsvSeparator:
         return self.get_prefs_import_sheet()['sep']
 
     def get_sheet_encoding(self) -> CsvEncoding:
@@ -28,8 +30,8 @@ class ControllerViewVariacao(ControllerVariacao):
     def set_sheet_encoding(self, encoding: CsvEncoding):
         self.get_prefs_import_sheet()['encoding'] = encoding
 
-    def get_prefs_import_sheet(self) -> PreferencesImportSheet:
-        return self.model_prefs.get_preferences().get_prefs_import_sheet()
+    def get_prefs_import_sheet(self) -> PrefImportCsv:
+        return self.model_prefs.get_preferences_app().get_prefs_import_sheet()
 
     def get_path_sheet_variacao(self) -> File | None:
         if 'path' in self.get_prefs_import_sheet().keys():

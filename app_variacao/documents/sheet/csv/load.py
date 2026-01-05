@@ -2,14 +2,39 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from io import BytesIO
 import pandas as pd
-from typing import Literal
-
+from typing import Literal, Union, TypedDict
 from app_variacao.documents.erros import LoadWorkbookError
-from app_variacao.documents.sheet.types import SheetData, WorkbookData, IndexTables
-from app_variacao.types.core import ObjectAdapter
+from app_variacao.documents.types import SheetData, WorkbookData, IndexTables, ObjectAdapter
+
 
 CsvEncoding = Literal['utf-8', 'iso-8859-1', 'latin1',  'cp1252']
-# ["utf-8", "iso-8859-1", "latin1",  "cp1252"]
+CsvSeparator = Literal[',', ';', '|', '\t', '_', ' ']
+
+
+class CsvMapping(TypedDict, total=True):
+
+    encoding: CsvEncoding
+    separator: CsvSeparator
+    virgula: CsvSeparator
+    ponto_virgula: CsvSeparator
+    pipe: CsvSeparator
+    tab: CsvSeparator
+    esp: CsvSeparator
+    under: CsvSeparator
+
+
+def create_csv_mapping() -> CsvMapping:
+
+    return {
+        'encoding': 'utf-8',
+        'separator': ';',
+        'virgula': ',',
+        'ponto_virgula': ';',
+        'pipe': '|',
+        'tab': '\t',
+        'esp': ' ',
+        'under': '_',
+    }
 
 
 class CsvLoad(ABC):
@@ -102,5 +127,9 @@ class ReadSheetCsv(ObjectAdapter):
         return cls(rd)
 
 
-__all__ = ['ReadSheetCsv', 'CsvLoad', 'CsvEncoding']
+__all__ = [
+    'ReadSheetCsv', 'CsvLoad', 'CsvEncoding',
+    'CsvMapping', 'CsvSeparator', 'create_csv_mapping',
+]
+
 

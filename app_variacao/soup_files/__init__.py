@@ -8,6 +8,7 @@ from .files import (
     JsonConvert,
     ContentFiles,
     EnumDocFiles,
+    ExtensionFiles,
     UserFileSystem,
     UserAppDir,
     KERNEL_TYPE,

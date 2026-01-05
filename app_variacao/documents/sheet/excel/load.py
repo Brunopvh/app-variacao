@@ -3,8 +3,7 @@ from io import BytesIO
 from abc import ABC, abstractmethod
 from typing import Any
 import pandas as pd
-from app_variacao.documents.sheet.types import SheetData, WorkbookData, IndexTables
-from app_variacao.types.core import ObjectAdapter
+from app_variacao.documents.types import SheetData, WorkbookData, IndexTables, ObjectAdapter
 
 
 class ExcelLoad(ABC):

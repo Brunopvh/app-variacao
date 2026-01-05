@@ -1,11 +1,10 @@
 from __future__ import annotations
 from app_variacao.app.models import (
-    ModelFileDialog, ModelExportJson, ModelPreferences, TypeConfApp,
-    TypeImportSheet, UserPreferences, PreferencesImportSheet
+    ModelFileDialog, ModelExportJson, ModelPreferences, PreferencesApp, PrefImportCsv
 )
 from app_variacao.app.ui import MappingStyles
 from app_variacao.soup_files import EnumDocFiles, File, Directory
-from app_variacao.types.array import ArrayList, BaseDict
+from app_variacao.documents.types import ArrayList, BaseDict
 
 
 class ControllerVariacao(object):
@@ -59,17 +58,17 @@ class ControllerPrefs(ControllerVariacao):
         self._initialized = True
         self.model: ModelPreferences = ModelPreferences()
 
-    def get_user_prefs(self) -> UserPreferences:
-        return self.model.get_preferences()
+    def get_user_prefs(self) -> PreferencesApp:
+        return self.model.get_preferences_app()
 
-    def get_prefs_import_sheet(self) -> PreferencesImportSheet:
+    def get_prefs_import_sheet(self) -> PrefImportCsv:
         return self.get_user_prefs()['sheet_variacao']
 
     def get_prefs_styles(self) -> MappingStyles:
         return self.get_user_prefs()['app_styles']
 
     def get_work_dir_app(self) -> str:
-        return self.model.get_preferences()['work_dir']
+        return self.model.get_preferences_app()['work_dir']
 
     def set_work_dir_app(self, d: Directory):
         self.get_user_prefs()['work_dir'] = d

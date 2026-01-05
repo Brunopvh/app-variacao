@@ -4,7 +4,7 @@ from tkinter import ttk
 import pandas as pd
 from app_variacao.app.ui import Container, ContainerV, ContainerH, show_alert
 from app_variacao.app.controllers import ControllerViewVariacao
-from app_variacao.app.models import TypeImportSheet, PreferencesImportSheet
+from app_variacao.app.models import ConfigImportCsv, PrefImportCsv
 from app_variacao.util import File
 
 

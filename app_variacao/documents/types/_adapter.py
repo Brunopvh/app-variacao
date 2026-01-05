@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
-from app_variacao.types.array import ArrayList
+from app_variacao.documents.types import ArrayList
 
 
 class ObjectAdapter(object):

@@ -1,11 +1,9 @@
 from __future__ import annotations
 import tkinter as tk
-from typing import Any, Callable, Literal, Union, TypeAlias
+from typing import Callable
 from tkinter import (ttk, Tk, messagebox)
-from app_variacao.types import BaseDict
 from app_variacao.app.ui.core_types import (
-    AbstractObserver, AbstractNotifyProvider, TypeMappingStylesDict,
-    MessageNotification, EnumStyles, EnumMessages, MappingStyles,
+    AbstractObserver, AbstractNotifyProvider, MessageNotification, EnumStyles, EnumMessages, MappingStyles,
 )
 
 

@@ -3,17 +3,15 @@ from io import BytesIO
 from abc import ABC, abstractmethod
 import pandas as pd
 from typing import Any
-from app_variacao.documents.erros import *
-from app_variacao.documents.sheet.types import (
-    SheetData, IndexTables, WorkbookData
+from app_variacao.documents.erros import LoadWorkbookError
+from app_variacao.documents.types import (
+    SheetData, IndexTables, WorkbookData, ObjectAdapter
 )
-from app_variacao.types.core import ObjectAdapter
 
 
-#===========================================================#
+# --------------------------------------------------------------------------------
 # CLASSES BASE E ADAPTADORES (ODS)
-#===========================================================#
-
+# --------------------------------------------------------------------------------
 class ODSLoad(ABC):
     """
     Classe abstrata base para carregadores de planilhas ODS.
@@ -43,7 +41,7 @@ class ODSLoad(ABC):
 
 
 # --------------------------------------------------------------------------------
-# 1. IMPLEMENTAÇÃO COM PANDAS
+# IMPLEMENTAÇÃO COM PANDAS
 # --------------------------------------------------------------------------------
 class ODSLoadPandas(ODSLoad):
     """Carregador ODS utilizando a biblioteca Pandas."""
@@ -86,9 +84,8 @@ class ODSLoadPandas(ODSLoad):
 
 
 # --------------------------------------------------------------------------------
-# CLASSE PRINCIPAL DE LEITURA (FACTORY)
+# CLASSE PRINCIPAL DE LEITURA
 # --------------------------------------------------------------------------------
-
 class ReadSheetODS(ObjectAdapter):
 
     def __init__(self, reader: ODSLoad):
