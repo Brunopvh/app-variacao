@@ -1,10 +1,9 @@
 from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
-import pandas as pd
 from app_variacao.app.ui import Container, ContainerV, ContainerH, show_alert
 from app_variacao.app.controllers import ControllerViewVariacao
-from app_variacao.app.models import ConfigImportCsv, PrefImportCsv
+from app_variacao.app.app_types import ConfigSheetCsv, ConfigSheetExcel
 from app_variacao.util import File
 
 
@@ -82,7 +81,9 @@ class DataImportConfigView(Container):
 
     def update_options_ui(self):
         path: File = self.controller_view.get_path_sheet_variacao()
-        if not path or not path.exists():
+        if path is None:
+            return
+        if not path.exists():
             return
 
         self.lbl_file_path.config(text=path.basename())
@@ -100,18 +101,19 @@ class DataImportConfigView(Container):
                 self.var_sheet_name.set(sheets[0])
             self.container_excel.pack(fill='x', pady=5)
 
-    def get_import_config(self) -> dict | None:
+    def get_import_config(self) -> ConfigSheetCsv | ConfigSheetExcel | None:
         path = self.controller_view.get_path_sheet_variacao()
-        if not path: return None
-
-        config = {"path": path, "extension": path.extension().lower()}
+        if path is None:
+            return None
+        if not path.exists():
+            return None
 
         if path.is_csv():
-            config.update({
-                "sep": self.var_sep.get().replace("\\t", "\t"),
-                "encoding": self.var_encoding.get()
-            })
+            self.controller_view.get_conf_sheet_csv()['sep'] = self.var_sep.get().replace("\\t", "\t")
+            self.controller_view.get_conf_sheet_csv()['encoding'] = self.var_encoding.get()
+            return self.controller_view.get_conf_sheet_csv()
         else:
-            config.update({"sheet_name": self.var_sheet_name.get()})
-        return config
+            self.controller_view.get_conf_sheet_excel()['sheet_name'] = self.var_sheet_name.get()
+            return self.controller_view.get_conf_sheet_excel()
+
 

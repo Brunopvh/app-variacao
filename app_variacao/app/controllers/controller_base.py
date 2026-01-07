@@ -1,8 +1,10 @@
 from __future__ import annotations
 from app_variacao.app.models import (
-    ModelFileDialog, ModelExportJson, ModelPreferences, PreferencesApp, PrefImportCsv
+    ModelFileDialog, ModelExportJson, ModelPreferences
 )
-from app_variacao.app.ui import MappingStyles
+from app_variacao.app.app_types import (
+    ConfigFileDialog, ConfigSheetCsv, ConfigSheetExcel, ConfigMappingStyles, ConfigUserPrefs,
+)
 from app_variacao.soup_files import EnumDocFiles, File, Directory
 from app_variacao.documents.types import ArrayList, BaseDict
 
@@ -57,24 +59,24 @@ class ControllerPrefs(ControllerVariacao):
             return
         self._initialized = True
         self.model: ModelPreferences = ModelPreferences()
-        self._pref_import_csv = PrefImportCsv()
-        self._pref_styles = MappingStyles().create_default()
 
-    def get_user_prefs(self) -> PreferencesApp:
-        return self.model.get_preferences_app()
+    def get_user_prefs(self) -> ConfigUserPrefs:
+        return self.model.get_config_user()
 
-    def get_prefs_import_sheet(self) -> PrefImportCsv:
-        return self._pref_import_csv
+    def get_conf_sheet_csv(self) -> ConfigSheetCsv:
+        return self.model.get_conf_sheet_csv()
 
-    def get_prefs_styles(self) -> MappingStyles:
-        return self._pref_styles
+    def get_conf_sheet_excel(self) -> ConfigSheetExcel:
+        return self.model.get_config_sheet_excel()
+
+    def get_conf_file_dialog(self) -> ConfigFileDialog:
+        return self.model.get_conf_file_dialog()
+
+    def get_conf_styles(self) -> ConfigMappingStyles:
+        return self.model.get_conf_style()
 
     def get_work_dir_app(self) -> Directory:
-        return self.model.get_preferences_app().get_config()['work_dir']
-
-    def set_work_dir_app(self, d: Directory):
-        self.get_user_prefs().get_config()['work_dir'] = d
-        self.save_config()
+        return self.model.get_config_user()['app_work_dir']
 
     def get_file_config(self) -> File:
         return self.model.file_prefs

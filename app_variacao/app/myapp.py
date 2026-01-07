@@ -1,15 +1,15 @@
 from app_variacao.app.ui import (
-    MyApp, MessageNotification, EnumMessages, MappingStyles
+    MyApp, MessageNotification, EnumMessages, ConfigMappingStyles
 )
 from app_variacao.app.view import PageVariacao, HomePage, MenuBar
-from app_variacao.app.controllers import ControllerPrefs
+from app_variacao.app.controllers.controller_main_app import ControllerMainApp
 
 
 class AppVariacao(MyApp):
 
-    def __init__(self):
-        super().__init__()
-        self.controller_prefs = ControllerPrefs()
+    def __init__(self, controller: ControllerMainApp):
+        super().__init__(controller)
+
         self.main_page = HomePage(
             self.get_window(), go_page=self.get_navigator().push
         )
@@ -23,18 +23,19 @@ class AppVariacao(MyApp):
         self.menu_bar = MenuBar(app=self)
 
         # Alterar os temas dos widgets conforme as configurações.
-        map_styles = self.controller_prefs.get_user_prefs().get_config()['app_styles']
+        map_styles: ConfigMappingStyles = self._controller.get_conf_styles()
         msg = MessageNotification(
             message_type=EnumMessages.MSG_UPDATE_STYLE,
             provider=map_styles,
         )
-        for key_style in MappingStyles.styles_keys:
-            map_styles.set_last_update(key_style)
+        _values = ("buttons", "labels", "frames", "pbar", "app", "menu_bar")
+        for _item in map_styles.keys():
+            map_styles['last_update'] = _item
             self.send_notify_listeners(msg)
 
     def save_configs(self) -> None:
-        self.controller_prefs.save_config()
-        print(f'Salvando configurações em: {self.controller_prefs.get_file_config().absolute()}')
+        print(f'Salvando configurações em: {self._controller.get_file_config().absolute()}')
+        self._controller.save_configs()
 
     def exit_app(self):
         self.save_configs()

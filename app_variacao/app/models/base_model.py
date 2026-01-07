@@ -3,7 +3,7 @@ import json
 from app_variacao.documents.types import ArrayList, BaseDict
 from app_variacao.soup_files import JsonConvert
 from app_variacao.util import File, Directory, EnumDocFiles
-from app_variacao.app.app_types import PrefFileDialog
+from app_variacao.app.app_types import PrefFileDialog, ConfigFileDialog
 from app_variacao.app.models._model_config import ModelPreferences
 from tkinter import filedialog
 import os.path
@@ -21,8 +21,6 @@ class AppFileDialog(object):
 
     def __init__(self) -> None:
         self.model_prefs = ModelPreferences()
-        self.prefs: PrefFileDialog = PrefFileDialog()
-        self.prefs.merge(self.model_prefs.get_preferences_app().get_config()['file_dialog'])
         self.title_pop_up_files: str = 'Selecione um arquivo'
         self.pop_up_text_filetypes: list[tuple[str, str]] = [("Todos os arquivos", "*"), ]
         self.default_extension = '.*'
@@ -88,13 +86,13 @@ class AppFileDialog(object):
         print(f'{__class__.__name__}  | {file_ext_type}')
         filename: str = filedialog.askopenfilename(
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_config()["initial_input_dir"].absolute(),
+            initialdir=self.model_prefs.get_conf_file_dialog()["initial_input_dir"].absolute(),
             filetypes=self.pop_up_text_filetypes,
         )
         if not filename:
             return None
         _dir_name = os.path.dirname(filename)
-        self.prefs.get_config()['initial_input_dir'] = Directory(_dir_name)
+        self.model_prefs.get_conf_file_dialog()['initial_input_dir'] = Directory(_dir_name)
         return filename
 
     def open_files_name(self, file_ext_type: EnumDocFiles = EnumDocFiles.ALL) -> tuple:
@@ -104,13 +102,13 @@ class AppFileDialog(object):
         self._config_pop_up_open_filename(file_ext_type)
         files = filedialog.askopenfilenames(
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_config()['initial_input_dir'].absolute(),
+            initialdir=self.model_prefs.get_conf_file_dialog()['initial_input_dir'].absolute(),
             filetypes=self.pop_up_text_filetypes,
         )
         if (files == "") or (len(files) < 0):
             return tuple()
         _dir_name = os.path.abspath(os.path.dirname(files[0]))
-        self.prefs.get_config()['initial_input_dir'] = Directory(_dir_name)
+        self.model_prefs.get_conf_file_dialog()['initial_input_dir'] = Directory(_dir_name)
         return files
 
     def open_file_sheet(self) -> str | None:
@@ -134,9 +132,9 @@ class AppFileDialog(object):
     def open_folder(self, action_input=True) -> str | None:
         """Selecionar uma pasta"""
         if action_input:
-            _initial: str = self.prefs.get_config()['initial_input_dir'].absolute()
+            _initial: str = self.model_prefs.get_conf_file_dialog()['initial_input_dir'].absolute()
         else:
-            _initial: str = self.prefs.get_config()['initial_output_dir'].absolute()
+            _initial: str = self.model_prefs.get_conf_file_dialog()['initial_output_dir'].absolute()
 
         _select_dir: str = filedialog.askdirectory(
             initialdir=_initial,
@@ -147,9 +145,9 @@ class AppFileDialog(object):
 
         _parent_dir = os.path.abspath(_select_dir)
         if action_input:
-            self.prefs.get_config()['initial_input_dir'] = Directory(_parent_dir)
+            self.model_prefs.get_conf_file_dialog()['initial_input_dir'] = Directory(_parent_dir)
         else:
-            self.prefs.get_config()['initial_output_dir'] = Directory(_parent_dir)
+            self.model_prefs.get_conf_file_dialog()['initial_output_dir'] = Directory(_parent_dir)
         return _select_dir
 
     def save_file(self, type_file: EnumDocFiles = EnumDocFiles.ALL_DOCUMENTS) -> File | None:
@@ -160,12 +158,11 @@ class AppFileDialog(object):
             defaultextension=self.default_extension,
             filetypes=self.pop_up_text_filetypes,  # Tipos de arquivos suportados
             title=self.title_pop_up_files,
-            initialdir=self.prefs.get_config()['initial_output_dir'].absolute(),
+            initialdir=self.model_prefs.get_conf_file_dialog()['initial_output_dir'].absolute(),
         )
-
         if not dir_path:
             return None
-        self.prefs.get_config()['initial_output_dir'] = Directory(dir_path)
+        self.model_prefs.get_conf_file_dialog()['initial_output_dir'] = Directory(dir_path)
         return File(dir_path)
 
 
@@ -174,9 +171,6 @@ class ModelFileDialog(BaseDict):
     def __init__(self, values: dict = None) -> None:
         super().__init__(values)
         self._file_dialog = AppFileDialog()
-
-    def get_prefs(self) -> PrefFileDialog:
-        return self._file_dialog.prefs
 
     def select_file_disk(self, f_type: EnumDocFiles) -> File | None:
         _f: str = self._file_dialog.open_filename(f_type)

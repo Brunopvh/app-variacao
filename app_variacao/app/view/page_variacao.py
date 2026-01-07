@@ -5,7 +5,7 @@ from app_variacao.app.ui import (
     BasePage, BaseWindow, ContainerH, EnumStyles, show_alert, show_info
 )
 from app_variacao.app.controllers import ControllerViewVariacao
-from app_variacao.app.models import ConfigImportCsv
+from app_variacao.app.app_types import ConfigSheetCsv, ConfigSheetExcel
 from app_variacao.app.view.views_widgets import DataSheetView, DataImportConfigView
 from app_variacao.documents import (
     ReadSheetCsv, ReadSheetODS, ReadSheetExcel, WorkbookData
@@ -60,7 +60,7 @@ class PageVariacao(BasePage):
         """
         Ler o DataFrame da planilha selecionada e enviar ao DataSheetView()
         """
-        config: dict[str, str] = self.container_import.get_import_config()
+        config: ConfigSheetExcel | ConfigSheetCsv = self.container_import.get_import_config()
         if config is None:
             show_info('Selecione uma planilha para prosseguir!')
             return

@@ -3,8 +3,10 @@ import tkinter as tk
 from typing import Callable
 from tkinter import (ttk, Tk, messagebox)
 from app_variacao.app.ui.core_types import (
-    AbstractObserver, AbstractNotifyProvider, MessageNotification, EnumStyles, EnumMessages, MappingStyles,
+    AbstractObserver, AbstractNotifyProvider, ConfigMappingStyles, keyStyles, valueStyle,
+    MessageNotification, EnumStyles, EnumMessages
 )
+from app_variacao.app.controllers.controller_main_app import ControllerMainApp
 
 
 def show_alert(text: str):
@@ -280,11 +282,12 @@ class BaseWindow(Tk):
         self.fun_info: Callable[[str], None] = show_info
         self.geometry('500x320')
         self._app_style: AppStyles = AppStyles(self)
-        self._app_themes: MappingStyles = MappingStyles.create_default()
         # Observador genérico para a janela
         self._window_observer = ObserverWidget()
         # Adicionar ao observador o método receiver_notify para receber notificações
         self._window_observer.add_listener(self.receiver_notify)
+        self._window_theme: EnumStyles = EnumStyles.WINDOW_DARK
+        self.update_window_theme(self._window_theme)
 
     def __repr__(self):
         return f'{self.__class__.__name__}()'
@@ -294,15 +297,18 @@ class BaseWindow(Tk):
 
     def receiver_notify(self, message: MessageNotification):
         if message.get_message_type().value == EnumMessages.MSG_UPDATE_STYLE.value:
-            _mapping: MappingStyles = message.get_provider()
-            if _mapping.get_last_update() == "app":
-                self.update_window_theme(_mapping.get_style_app())
+            _mapping: ConfigMappingStyles = message.get_provider()
+            if _mapping['last_update'] == "app":
+                self.update_window_theme(_mapping['app'])
 
     def initUI(self) -> None:
         pass
 
     def get_window_styles(self) -> AppStyles:
         return self._app_style
+
+    def get_window_theme(self) -> EnumStyles:
+        return self._window_theme
 
     def update_window_theme(self, theme: EnumStyles) -> None:
         # Padrão Dark
@@ -316,10 +322,8 @@ class BaseWindow(Tk):
             pass
         else:
             return
+        self._window_theme = theme
         self.configure(bg=bg_color)
-
-    def get_themes_mapping(self) -> MappingStyles:
-        return self._app_themes
 
     def show_alert(self, text: str):
         self.fun_alert(text)
@@ -374,9 +378,13 @@ class BasePage(ttk.Frame):
         self.frame_master: ttk.Frame = ttk.Frame(self)
         self.frame_master.pack(expand=True, fill='both', padx=2, pady=2)
         self._list_frames.append(self.frame_master)
+        self._page_style: EnumStyles = EnumStyles.FRAME_DARK_GRAY
 
     def __repr__(self):
         return f'{__class__.__name__}() {self.get_page_name()}'
+
+    def get_page_style(self) -> EnumStyles:
+        return self._page_style
 
     def add_btn(self, btn: ttk.Button):
         self._list_buttons.append(btn)
@@ -389,7 +397,7 @@ class BasePage(ttk.Frame):
 
     def init_ui_page(self):
         self.frame_master.configure(
-            style=self.myapp_window.get_themes_mapping().get_style_frames().value,
+            style=self._page_style.value,
         )
 
     def get_observer(self) -> ObserverWidget:
@@ -438,17 +446,17 @@ class BasePage(ttk.Frame):
     def update_page_theme(self, theme: EnumStyles):
         self.configure(style=theme.value)
 
-    def _update_page_widgets(self, app_theme: MappingStyles):
-        if app_theme.get_last_update() == "buttons":
+    def _update_page_widgets(self, app_style_conf: ConfigMappingStyles) -> None:
+        if app_style_conf['last_update'] == "buttons":
             for btn in self._list_buttons:
-                btn.configure(style=app_theme.get_style_buttons().value)
-        elif app_theme.get_last_update() == "frames":
+                btn.configure(style=app_style_conf['buttons'].value)
+        elif app_style_conf['last_update'] == "frames":
             for _frame in self._list_frames:
-                _frame.configure(style=app_theme.get_style_frames().value)
-        elif app_theme.get_last_update() == "labels":
+                _frame.configure(style=app_style_conf['frames'].value)
+        elif app_style_conf['last_update'] == "labels":
             for lb in self._list_labels:
-                lb.configure(style=app_theme.get_style_labels().value)
-        elif app_theme.get_last_update() == "app":
+                lb.configure(style=app_style_conf['labels'].value)
+        elif app_style_conf['last_update'] == "app":
             #self.update_page_theme(app_theme.get_style_app())
             pass
         else:
@@ -556,12 +564,13 @@ class MyApp(object):
             cls._instance_controller = super(MyApp, cls).__new__(cls)
         return cls._instance_controller
 
-    def __init__(self):
+    def __init__(self, controller: ControllerMainApp):
         super().__init__()
         # Garante que __init__ não será executado mais de uma vez
         if hasattr(self, '_initialized') and self._initialized:
             return
         self._initialized = True
+        self._controller: ControllerMainApp = controller
         self._navigator: Navigator = Navigator()
         self._base_window: BaseWindow = BaseWindow()
         self._app_observer: ObserverWidget = ObserverWidget()
@@ -580,8 +589,8 @@ class MyApp(object):
     def get_styles_app(self) -> AppStyles:
         return self._base_window.get_window_styles()
 
-    def get_styles_mapping(self) -> MappingStyles:
-        return self._base_window.get_themes_mapping()
+    def get_styles_mapping(self) -> ConfigMappingStyles:
+        return self._controller.get_conf_styles()
 
     def get_navigator(self) -> Navigator:
         return self._navigator
@@ -596,7 +605,7 @@ class MyApp(object):
         """
         Adiciona uma página ao navegador de páginas
         """
-        page.update_page_theme(self.get_styles_mapping().get_style_frames())
+        page.update_page_theme(self.get_styles_mapping()['frames'])
         self.add_listener(page.get_observer())
         self._navigator.add_page(page)
 
@@ -620,7 +629,7 @@ def run_app(myapp: MyApp) -> None:
 
 
 __all__ = [
-    'AppStyles', 'MappingStyles', 'ObserverWidget',
-    'NotifyWidget', 'BaseWindow', 'BasePage', 'Navigator', 'MyApp', 'run_app',
-    'show_info', 'show_alert',
+    'AppStyles', 'ObserverWidget', 'NotifyWidget', 'BaseWindow', 'BasePage',
+    'Navigator', 'MyApp', 'run_app', 'show_info', 'show_alert',
 ]
+

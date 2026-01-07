@@ -91,7 +91,7 @@ class MenuBar(object):
 
         # Iniciar o tema
         self.set_theme_menu_bar(
-            self._controller_conf.get_user_prefs().get_config()['app_styles'].get_style_menu_bar()
+            self._controller_conf.get_conf_styles()['menu_bar']
         )
 
         # Submenu para alterar o estilo da barra/menu.
@@ -240,7 +240,7 @@ class MenuBar(object):
             print(f'{__class__.__name__} Tema não alterado | {print(new)} |')
             return
 
-        self.myapp.get_styles_mapping().set_style_menu_bar(new)
+        self.myapp.get_styles_mapping()['menu_bar'] = new
         self.master_menu_bar.config(
             bg=bg_color,
             fg=fg_color,
@@ -249,11 +249,11 @@ class MenuBar(object):
         )
 
     def update_theme_frames(self, new: EnumStyles):
-        self.myapp.get_styles_mapping().set_style_frames(new)
+        self.myapp.get_styles_mapping()['frames'] = new
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def set_theme_buttons(self, new: EnumStyles):
-        self.myapp.get_styles_mapping().set_style_buttons(new)
+        self.myapp.get_styles_mapping()['buttons'] = new
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def change_work_dir(self):
@@ -262,7 +262,7 @@ class MenuBar(object):
         if _work_dir is None:
             return
 
-        self._controller_conf.set_work_dir_app(_work_dir)
+        self._controller_conf.get_user_prefs()['app_work_dir'] = _work_dir
         self.menu_config.entryconfig(
             self.index_work_dir,
             label=f'Pasta de trabalho: {_work_dir.absolute()}'

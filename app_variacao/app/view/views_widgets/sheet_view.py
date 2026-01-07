@@ -1,10 +1,7 @@
 from __future__ import annotations
-import tkinter as tk
 from tkinter import ttk
 import pandas as pd
-from app_variacao.app.ui import Container, ContainerV, ContainerH
-from app_variacao.app.ui.core_types import EnumStyles
-from app_variacao.documents.sheet.excel import ReadSheetExcel, ExcelLoad
+from app_variacao.app.ui import Container
 
 
 class DataSheetView(Container):
