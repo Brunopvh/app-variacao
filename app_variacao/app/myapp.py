@@ -29,13 +29,9 @@ class AppVariacao(MyApp):
             provider=map_styles,
         )
         _values = ("buttons", "labels", "frames", "pbar", "app", "menu_bar")
-        for _item in map_styles.keys():
+        for _item in _values:
             map_styles['last_update'] = _item
             self.send_notify_listeners(msg)
-
-    def save_configs(self) -> None:
-        print(f'Salvando configurações em: {self._controller.get_file_config().absolute()}')
-        self._controller.save_configs()
 
     def exit_app(self):
         self.save_configs()

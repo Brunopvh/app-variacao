@@ -241,6 +241,7 @@ class MenuBar(object):
             return
 
         self.myapp.get_styles_mapping()['menu_bar'] = new
+        self.myapp.get_styles_mapping()['last_update'] = 'menu_bar'
         self.master_menu_bar.config(
             bg=bg_color,
             fg=fg_color,
@@ -250,10 +251,12 @@ class MenuBar(object):
 
     def update_theme_frames(self, new: EnumStyles):
         self.myapp.get_styles_mapping()['frames'] = new
+        self.myapp.get_styles_mapping()['last_update'] = 'frames'
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def set_theme_buttons(self, new: EnumStyles):
         self.myapp.get_styles_mapping()['buttons'] = new
+        self.myapp.get_styles_mapping()['last_update'] = 'buttons'
         self.myapp.send_notify_listeners(self._message_top_bar)
 
     def change_work_dir(self):

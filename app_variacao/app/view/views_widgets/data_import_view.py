@@ -12,6 +12,8 @@ class DataImportConfigView(Container):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
         self.controller_view = ControllerViewVariacao()
+        if 'sheet_variacao' in  self.controller_view._controller_prefs.get_user_prefs().keys():
+            self.controller_view._controller_prefs.get_user_prefs().pop('sheet_variacao')
 
         # Estrutura interna fixa
         self.main_container = ContainerV(self)

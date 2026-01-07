@@ -5,7 +5,10 @@ from app_variacao.app.controllers.controller_base import (
     ControllerPopUpFiles, ControllerVariacao, ControllerPrefs
 )
 from app_variacao.documents import ReadSheetExcel, ReadSheetODS, CsvEncoding
+from app_variacao.app.models.model_view_variacao import ModelViewVariacao
 from app_variacao.util import File
+import threading
+import pandas as pd
 
 
 class ControllerViewVariacao(ControllerVariacao):
@@ -14,6 +17,19 @@ class ControllerViewVariacao(ControllerVariacao):
         super().__init__()
         self._controller_popup_files = ControllerPopUpFiles()
         self._controller_prefs = ControllerPrefs()
+        self.model = ModelViewVariacao()
+
+    @property
+    def isLoading(self) -> bool:
+        return self.model.isLoading
+
+    @property
+    def loaded_data(self) -> pd.DataFrame:
+        return self.model.df
+
+    def read_thread_data_frame(self, config: ConfigSheetExcel | ConfigSheetCsv) -> None:
+        data_thread = threading.Thread(target=self.model.read_data_frame, args=(config,))
+        data_thread.start()
 
     def set_csv_separator(self, sep: CsvSeparator):
         self._controller_prefs.get_conf_sheet_csv()['sep'] = sep

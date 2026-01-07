@@ -444,6 +444,8 @@ class BasePage(ttk.Frame):
         self.myapp_window.title(f'{self.get_page_name().upper()}')
 
     def update_page_theme(self, theme: EnumStyles):
+        print(f'=========================================================')
+        print(f'Atualizando tema da página: {self.get_page_name()} => {theme.value}')
         self.configure(style=theme.value)
 
     def _update_page_widgets(self, app_style_conf: ConfigMappingStyles) -> None:
@@ -460,7 +462,10 @@ class BasePage(ttk.Frame):
             #self.update_page_theme(app_theme.get_style_app())
             pass
         else:
-            print(f'DEBUG: {__class__.__name__} Nenhum tema foi alterado')
+            print(
+                f'DEBUG: {__class__.__name__} Nenhum tema foi alterado em {self.get_page_name()}', ': ',
+                app_style_conf['last_update'], app_style_conf['frames'].value
+            )
 
     def update_page_state(self, msg: MessageNotification):
         if EnumMessages.MSG_UPDATE_STYLE.value == msg.get_message_type().value:
@@ -616,7 +621,8 @@ class MyApp(object):
                 break
 
     def save_configs(self) -> None:
-        pass
+        print(f'Salvando configurações em: {self._controller.get_file_config().absolute()}')
+        self._controller.save_configs()
 
     def exit_app(self):
         self.save_configs()
