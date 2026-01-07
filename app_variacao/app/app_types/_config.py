@@ -292,7 +292,7 @@ class PrefSheetCsv(InterfaceCreateConfig):
 
     def __init__(self) -> None:
         super().__init__()
-
+        self._config = dict()
         self._config['extension'] = '.csv'
         self._config['sep'] = ";"
         self._config['encoding'] = 'utf-8'

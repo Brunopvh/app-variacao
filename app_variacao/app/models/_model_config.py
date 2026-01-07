@@ -123,7 +123,7 @@ class ModelPreferences(object):
         self._prefs_all['file_dialog'].set_config(file_dialog)
 
     def get_conf_sheet_csv(self) -> ConfigSheetCsv:
-        self._prefs_all['sheet_csv'].get_config()
+        return self._prefs_all['sheet_csv'].get_config()
 
     def set_config_sheet_csv(self, conf: ConfigSheetCsv):
         self._prefs_all['sheet_csv'].set_config(conf)
