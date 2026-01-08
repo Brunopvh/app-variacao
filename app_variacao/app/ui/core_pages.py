@@ -3,8 +3,8 @@ import tkinter as tk
 from typing import Callable
 from tkinter import (ttk, Tk, messagebox)
 from app_variacao.app.ui.core_types import (
-    AbstractObserver, AbstractNotifyProvider, ConfigMappingStyles, keyStyles, valueStyle,
-    MessageNotification, EnumStyles, EnumMessages
+    AbstractObserver, ObserverWidget, ConfigMappingStyles, NotifyWidget,
+    MessageNotification, EnumStyles, EnumMessages,
 )
 from app_variacao.app.controllers.controller_main_app import ControllerMainApp
 
@@ -225,50 +225,10 @@ class AppStyles(object):
         self.stylePbarPurple.theme_use('default')
         self.stylePbarPurple.configure(
             "Purple.Horizontal.TProgressbar",
-           thickness=6,  # altura fina
-           troughcolor="#eeeeee",  # fundo da barra
-           background="#4B0081"
+            thickness=6,  # altura fina
+            troughcolor="#eeeeee",  # fundo da barra
+            background="#4B0081"
            )
-
-
-class ObserverWidget(AbstractObserver):
-    """
-    Sujeito observador que repassa as notificações recebidas para os filhos observadores
-    """
-
-    def __init__(self):
-        super().__init__()
-        self._listeners: set[Callable[[MessageNotification], None]] = set()
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}() Sujeito Observador'
-
-    def add_listener(self, obs: Callable[[MessageNotification], None]) -> None:
-        self._listeners.add(obs)
-
-    def receiver_notify(self, msg: MessageNotification):
-        """
-        Recebe notificações dos sujeitos notificadores e repassa para a página
-        """
-        for obs in self._listeners:
-            obs(msg)
-
-
-class NotifyWidget(AbstractNotifyProvider):
-
-    def __init__(self):
-        super().__init__()
-
-    def __repr__(self):
-        return f'{__class__.__name__}() Sujeito Notificador'
-
-    def send_notify(self, message: MessageNotification):
-        """
-        Envia a notificação para todos os sujeitos observadores, sendo a
-        mensagem (MessageNotification) um subtipo de dicionário.
-        """
-        for _observer in self.observer_list:
-            _observer.receiver_notify(message)
 
 
 class BaseWindow(Tk):
@@ -367,17 +327,18 @@ class BasePage(ttk.Frame):
         self.GEOMETRY: str = '400x300'
         self._page_name: str = None
         self._page_route: str = None
-        self._list_frames: list[ttk.Frame] = []
-        self._list_buttons: list[ttk.Button] = []
-        self._list_labels: list[ttk.Label] = []
 
-        self._page_observer: ObserverWidget = ObserverWidget()
-        self._page_observer.add_listener(self.receiver_notify)
+        # Receber notificações externas
+        self._observer: ObserverWidget = ObserverWidget()
+        # se inscrever no próprio observador para receber as notificações externas.
+        self._observer.add_listener(self.receiver_notify)
+
+        # Enviar notificações para outros objetos, os objetos externos que precisam
+        # ser notificados devem se inscrever no objeto notificador NotifyWidget()
         self._page_change_notify: NotifyWidget = NotifyWidget()
 
         self.frame_master: ttk.Frame = ttk.Frame(self)
         self.frame_master.pack(expand=True, fill='both', padx=2, pady=2)
-        self._list_frames.append(self.frame_master)
         self._page_style: EnumStyles = EnumStyles.FRAME_DARK_GRAY
 
     def __repr__(self):
@@ -386,14 +347,9 @@ class BasePage(ttk.Frame):
     def get_page_style(self) -> EnumStyles:
         return self._page_style
 
-    def add_btn(self, btn: ttk.Button):
-        self._list_buttons.append(btn)
-
-    def add_label(self, label: ttk.Label):
-        self._list_labels.append(label)
-
-    def add_frame(self, frame: ttk.Frame):
-        self._list_frames.append(frame)
+    def set_page_style(self, style: EnumStyles):
+        self._page_style = style
+        self.configure(style=style.value)
 
     def init_ui_page(self):
         self.frame_master.configure(
@@ -401,7 +357,7 @@ class BasePage(ttk.Frame):
         )
 
     def get_observer(self) -> ObserverWidget:
-        return self._page_observer
+        return self._observer
 
     def add_listener(self, listener: AbstractObserver):
         """
@@ -420,7 +376,10 @@ class BasePage(ttk.Frame):
             Receber notificações externas de outros objetos.
         """
         if msg.get_message_type().value == EnumMessages.MSG_UPDATE_STYLE.value:
+            conf_styles: ConfigMappingStyles = msg.get_provider()
+            self.set_page_style(conf_styles['frames'])
             self.update_page_state(msg)
+            self.notify_listeners(msg)
         else:
             print(f'DEBUG: {__class__.__name__} Nenhuma configurada para essa notificação: {msg.keys()}')
 
@@ -443,34 +402,8 @@ class BasePage(ttk.Frame):
         self.myapp_window.geometry(self.GEOMETRY)
         self.myapp_window.title(f'{self.get_page_name().upper()}')
 
-    def update_page_theme(self, theme: EnumStyles):
-        print(f'=========================================================')
-        print(f'Atualizando tema da página: {self.get_page_name()} => {theme.value}')
-        self.configure(style=theme.value)
-
-    def _update_page_widgets(self, app_style_conf: ConfigMappingStyles) -> None:
-        if app_style_conf['last_update'] == "buttons":
-            for btn in self._list_buttons:
-                btn.configure(style=app_style_conf['buttons'].value)
-        elif app_style_conf['last_update'] == "frames":
-            for _frame in self._list_frames:
-                _frame.configure(style=app_style_conf['frames'].value)
-        elif app_style_conf['last_update'] == "labels":
-            for lb in self._list_labels:
-                lb.configure(style=app_style_conf['labels'].value)
-        elif app_style_conf['last_update'] == "app":
-            #self.update_page_theme(app_theme.get_style_app())
-            pass
-        else:
-            print(
-                f'DEBUG: {__class__.__name__} Nenhum tema foi alterado em {self.get_page_name()}', ': ',
-                app_style_conf['last_update'], app_style_conf['frames'].value
-            )
-
     def update_page_state(self, msg: MessageNotification):
-        if EnumMessages.MSG_UPDATE_STYLE.value == msg.get_message_type().value:
-            self._update_page_widgets(msg.get_provider())
-        elif EnumMessages.MSG_PROCESS_FINISHED.value == msg.get_message_type().value:
+        if EnumMessages.MSG_PROCESS_FINISHED.value == msg.get_message_type().value:
             print(f'{__class__.__name__} Nenhuma ação configurada para essa notificação!')
         else:
             print(
@@ -610,7 +543,7 @@ class MyApp(object):
         """
         Adiciona uma página ao navegador de páginas
         """
-        page.update_page_theme(self.get_styles_mapping()['frames'])
+        #page.set_page_style(self.get_styles_mapping()['frames'])
         self.add_listener(page.get_observer())
         self._navigator.add_page(page)
 

@@ -2,6 +2,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 from tkinter import ttk
+from app_variacao.app.ui.core_types import (
+    ObserverWidget, NotifyWidget, MessageNotification, EnumMessages, EnumStyles, ConfigMappingStyles
+)
 
 
 class Container(ttk.Frame):
@@ -17,6 +20,27 @@ class Container(ttk.Frame):
                 cursor=cursor, height=height, name=name, padding=padding,
                 relief=relief, style=style, takefocus=takefocus, width=width
             )
+        self._observer_widget: ObserverWidget = ObserverWidget()
+        self._observer_widget.add_listener(self.receiver_notify)
+        self._notify_widget: NotifyWidget = NotifyWidget()
+
+    def get_observer(self) -> ObserverWidget:
+        return self._observer_widget
+
+    def receiver_notify(self, message: MessageNotification):
+        if message.get_message_type() == EnumMessages.MSG_UPDATE_STYLE:
+            conf_styles: ConfigMappingStyles = message.get_provider()
+            self.config(style=conf_styles['frames'].value)
+        self.notify_listeners(message)
+
+    def notify_listeners(self, message: MessageNotification):
+        self._notify_widget.send_notify(message)
+
+    def add_listener(self, listener: ObserverWidget):
+        self._notify_widget.add_observer(listener)
+
+    def remove_listener(self, listener: ObserverWidget):
+        self._notify_widget.remove_observer(listener)
 
 
 class ContainerH(Container):
@@ -35,7 +59,7 @@ class ContainerH(Container):
         pass
 
 
-class ContainerV(ttk.Frame):
+class ContainerV(Container):
 
     def __init__(
                 self, master=None, *, border=None,

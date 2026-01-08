@@ -2,8 +2,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Generic, TypeVar, TypeAlias, Union, Literal, TypedDict
-from app_variacao.documents.types import BaseDict
+from typing import Any, Generic, TypeVar, TypeAlias, Union, Literal, TypedDict, Callable
 
 
 class EnumStyles(Enum):
@@ -185,9 +184,50 @@ class AbstractObserver(ABC):
         pass
 
 
+class ObserverWidget(AbstractObserver):
+    """
+    Sujeito observador que repassa as notificações recebidas para os filhos observadores
+    """
+
+    def __init__(self):
+        super().__init__()
+        self._listeners: set[Callable[[MessageNotification], None]] = set()
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}() Sujeito Observador'
+
+    def add_listener(self, obs: Callable[[MessageNotification], None]) -> None:
+        self._listeners.add(obs)
+
+    def receiver_notify(self, msg: MessageNotification):
+        """
+        Recebe notificações dos sujeitos notificadores e repassa para a página
+        """
+        for obs in self._listeners:
+            obs(msg)
+
+
+class NotifyWidget(AbstractNotifyProvider):
+
+    def __init__(self):
+        super().__init__()
+
+    def __repr__(self):
+        return f'{__class__.__name__}() Sujeito Notificador'
+
+    def send_notify(self, message: MessageNotification):
+        """
+        Envia a notificação para todos os sujeitos observadores, sendo a
+        mensagem (MessageNotification) um subtipo de dicionário.
+        """
+        for _observer in self.observer_list:
+            _observer.receiver_notify(message)
+
+
 __all__ = [
     'EnumStyles', 'EnumMessages', 'T', 'MessageNotification',
     'AbstractObserver', 'AbstractNotifyProvider', 'ConfigMappingStyles',
-    'TypeStylesJsonDict', 'TypeMessageNotification', 'valueStyle', 'keyStyles'
+    'TypeStylesJsonDict', 'TypeMessageNotification', 'valueStyle', 'keyStyles',
+    'NotifyWidget', 'ObserverWidget',
 ]
 

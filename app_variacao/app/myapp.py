@@ -16,7 +16,6 @@ class AppVariacao(MyApp):
         self.main_page.set_page_name('HOME')
         self.main_page.set_page_route('/home')
         self.add_page(self.main_page)
-
         self.add_page(
             PageVariacao(self.get_window(), go_page=self.get_navigator().push)
         )
@@ -28,10 +27,7 @@ class AppVariacao(MyApp):
             message_type=EnumMessages.MSG_UPDATE_STYLE,
             provider=map_styles,
         )
-        _values = ("buttons", "labels", "frames", "pbar", "app", "menu_bar")
-        for _item in _values:
-            map_styles['last_update'] = _item
-            self.send_notify_listeners(msg)
+        self.send_notify_listeners(msg)
 
     def exit_app(self):
         self.save_configs()

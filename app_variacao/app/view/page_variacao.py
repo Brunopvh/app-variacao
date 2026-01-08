@@ -32,7 +32,7 @@ class PageVariacao(BasePage):
         self.pbar = ProgressBar.create_pbar_tk(self.container_pbar, mode="indeterminate")
 
         self.container1 = ContainerH(self.frame_master)
-        self.add_frame(self.container1)
+        self.add_listener(self.container1.get_observer())
 
         # Botão para processar/ler
         self.btn_read = ttk.Button(
@@ -40,19 +40,19 @@ class PageVariacao(BasePage):
             text="Carregar Dados",
             command=self.load_data_to_view
         )
-        self.add_btn(self.btn_read)
+        #self.add_btn(self.btn_read)
 
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
         # =============================================================#
         self.container_import: DataImportConfigView = DataImportConfigView(self.container1)
+        self.add_listener(self.container_import.get_observer())
 
         # =============================================================#
         # Container 3 - Exibição dos dados
         # =============================================================#
         self.container_sheet_view = ContainerH(self.frame_master)
         self.data_view: DataSheetView = DataSheetView(self.container_sheet_view)
-        self.add_frame(self.data_view)
 
     def back_page(self):
         self.func_go_page('/back')

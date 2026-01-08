@@ -1,4 +1,4 @@
-from app_variacao.app.ui import BasePage, BaseWindow, EnumStyles
+from app_variacao.app.ui import BasePage, BaseWindow, EnumStyles, Container
 from tkinter import ttk
 from typing import Any, Callable
 
@@ -23,24 +23,27 @@ class HomePage(BasePage):
 
         self.GEOMETRY = '500x250'
         self.set_page_name('Página Principal')
+        self._main_frame = Container(self.frame_master)
+        self.add_listener(self._main_frame.get_observer())
 
         self.lb1 = ttk.Label(
-            self.frame_master,
+            self._main_frame,
             text="Página Inicial",
             style=EnumStyles.LABEL_DEFAULT.value,
         )
-        self.add_label(self.lb1)
 
         self.btn_variacao = ttk.Button(
-            self.frame_master,
+            self._main_frame,
             text='Variação de Leitura',
             command=lambda: self.func_go_page('/variacao'),
             width=45,
             style=EnumStyles.BUTTON_PURPLE_LIGHT.value
         )
-        self.add_btn(self.btn_variacao)
 
     def init_ui_page(self):
+        self.pack(expand=True, fill='both', padx=2, pady=1)
+        self.frame_master.pack(fill='both', padx=2, pady=1, expand=True)
+        self._main_frame.pack(fill='both', padx=2, pady=1, expand=True)
         self.lb1.pack(padx=2, pady=2)
         self.btn_variacao.pack(padx=2, pady=2)
-        self.pack(expand=True, fill='both', padx=2, pady=1)
+
