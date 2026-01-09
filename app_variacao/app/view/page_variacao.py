@@ -40,7 +40,6 @@ class PageVariacao(BasePage):
             text="Carregar Dados",
             command=self.load_data_to_view
         )
-        #self.add_btn(self.btn_read)
 
         # =============================================================#
         # Container 2 - Configurar a importação dos dados.
@@ -57,8 +56,11 @@ class PageVariacao(BasePage):
     def back_page(self):
         self.func_go_page('/back')
 
-    def init_ui_page(self):
-        self.pbar.init_pbar()
+    def init_ui_page(self, **kwargs):
+        self.container_pbar.pack(fill='x', padx=2, pady=1)
+        self.pbar.init_pbar(
+            kwargs={'style': EnumStyles.PBAR_GREEN}
+        )
         self.container1.pack(padx=2, pady=2, fill='x')
         self.btn_read.pack(pady=10, side=tk.LEFT)
 

@@ -40,7 +40,7 @@ class HomePage(BasePage):
             style=EnumStyles.BUTTON_PURPLE_LIGHT.value
         )
 
-    def init_ui_page(self):
+    def init_ui_page(self, **kwargs):
         self.pack(expand=True, fill='both', padx=2, pady=1)
         self.frame_master.pack(fill='both', padx=2, pady=1, expand=True)
         self._main_frame.pack(fill='both', padx=2, pady=1, expand=True)

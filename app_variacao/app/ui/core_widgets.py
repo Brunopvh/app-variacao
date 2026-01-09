@@ -168,21 +168,25 @@ class InterfaceProgressBar(ABC):
 
 class ProgressBarTkIndeterminate(InterfaceProgressBar):
 
-    def __init__(self, container: Container):
+    def __init__(self, container: Container, mode='indeterminate'):
         super().__init__()
         self._container: Container = container
         self._lb_text = ttk.Label(self._container, text='-')
         self._real_pbar: ttk.Progressbar = ttk.Progressbar(
-            self._container, mode='indeterminate'
+            self._container, mode=mode
         )
 
     def get_real_pbar(self) -> ttk.Progressbar:
         return self._real_pbar
 
     def init_pbar(self, **kwargs):
-        self._lb_text.pack(expand=True, fill='both')
-        self._container.pack(expand=True, fill='x', padx=1, pady=1)
-        self._real_pbar.pack(expand=True, fill='x', padx=1, pady=1)
+        self._lb_text.pack(fill='both', pady=1, padx=1)
+        self._container.pack(fill='x', padx=1, pady=1)
+        self._real_pbar.pack(fill='x', padx=1, pady=1)
+        if kwargs:
+            if 'style' in kwargs.keys():
+                self._real_pbar.configure(style=kwargs['style'])
+        self._real_pbar.pack(fill='x', padx=2, pady=1)
 
     def start(self):
         self._real_pbar.start(8)
@@ -197,29 +201,17 @@ class ProgressBarTkIndeterminate(InterfaceProgressBar):
         self._lb_text.configure(text=self.get_message_text())
 
 
-class ProgressBarTkDeterminate(InterfaceProgressBar):
+class ProgressBarTkDeterminate(ProgressBarTkIndeterminate):
 
-    def __init__(self, container: Container):
-        super().__init__()
-        self._container: Container = container
-        self._lb_text = ttk.Label(self._container, text='-')
+    def __init__(self, container: Container, mode='indeterminate'):
+        super().__init__(container, mode)
+
         self._real_pbar: ttk.Progressbar = ttk.Progressbar(
             self._container, mode='determinate', maximum=100
         )
 
     def get_real_pbar(self) -> ttk.Progressbar:
         return self._real_pbar
-
-    def init_pbar(self, **kwargs):
-        self._container.configure(height=35)
-        # self._container.pack_propagate(False)
-        #self._container.pack(fill='x', padx=2, pady=2)
-        self._container.pack(side='bottom', fill='x', padx=2, pady=1)
-        self._lb_text.pack(fill='x', padx=2, pady=1)
-        if kwargs:
-            if 'style' in kwargs:
-                self._real_pbar.configure(style=kwargs['style'])
-        self._real_pbar.pack(expand=True, fill='x', padx=2, pady=1)
 
     def start(self):
         self.set_running(True)

@@ -351,7 +351,7 @@ class BasePage(ttk.Frame):
         self._page_style = style
         self.configure(style=style.value)
 
-    def init_ui_page(self):
+    def init_ui_page(self, **kwargs):
         self.frame_master.configure(
             style=self._page_style.value,
         )
