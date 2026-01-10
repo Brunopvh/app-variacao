@@ -8,9 +8,9 @@ from app_variacao.documents.types import SheetData, WorkbookData, IndexTables, O
 
 
 CsvEncoding = Literal['utf-8', 'iso-8859-1', 'latin1',  'cp1252']
-CsvEncodingList = ['utf-8', 'iso-8859-1', 'latin1',  'cp1252']  # ["utf-8", "latin1", "cp1252"]
+CsvEncodingList: list[str] = ['utf-8', 'iso-8859-1', 'latin1',  'cp1252']  # ["utf-8", "latin1", "cp1252"]
 CsvSeparator = Literal[',', ';', '|', '\t', '_', ' ']
-CsvSeparatorList = [';', ',', '|', '\t', '_', ' ']  # [";", ",", "\\t", "|", "-"]
+CsvSeparatorList: list[str] = [';', ',', '|', '\t', '_', ' ']  # [";", ",", "\\t", "|", "-"]
 
 
 class CsvMapping(TypedDict, total=True):
