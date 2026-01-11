@@ -53,6 +53,8 @@ class ModelPreferences(object):
 
         cfg_csv: ConfigSheetCsv = {'encoding': 'utf-8', 'extension': '.csv', 'sep': ' '}
         cfg_excel: ConfigSheetExcel = dict()
+        cfg_user: ConfigUserPrefs = {'app_work_dir': _app_dir.workspaceDirApp}
+
         cfg_dialog: ConfigFileDialog = {
             'initial_output_dir': _app_dir.userFileSystem.get_user_downloads(),
             'initial_input_dir': _app_dir.userFileSystem.get_user_downloads(),
@@ -60,6 +62,7 @@ class ModelPreferences(object):
             'last_input_dir': _app_dir.userFileSystem.get_user_downloads(),
             'last_output_dir': _app_dir.userFileSystem.get_user_downloads(),
         }
+
         cfg_style: ConfigMappingStyles = {
                 'buttons': EnumStyles.BUTTON_PURPLE_LIGHT,
                 'labels': EnumStyles.LABEL_PURPLE_LIGHT,
@@ -68,8 +71,9 @@ class ModelPreferences(object):
                 'app': EnumStyles.WINDOW_DARK,
                 'menu_bar': EnumStyles.TOPBAR_DARK,
                 'last_update': 'frames',
+                'tree_view': EnumStyles.TREE_VIEW_DARK,
             }
-        cfg_user: ConfigUserPrefs = {'app_work_dir': _app_dir.workspaceDirApp}
+
         self._pref_sheet_csv.merge(cfg_csv)
         self._pref_sheet_excel.merge(cfg_excel)
         self._pref_file_dialog.merge(cfg_dialog)

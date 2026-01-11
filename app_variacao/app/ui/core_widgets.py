@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 from tkinter import ttk
 from app_variacao.app.ui.core_types import (
-    ObserverWidget, NotifyWidget, MessageNotification, EnumMessages, EnumStyles, ConfigMappingStyles
+    ObserverWidget, NotifyWidget, MessageNotification, EnumMessages, ConfigMappingStyles
 )
 
 
@@ -21,26 +21,168 @@ class Container(ttk.Frame):
                 relief=relief, style=style, takefocus=takefocus, width=width
             )
         self._observer_widget: ObserverWidget = ObserverWidget()
-        self._observer_widget.add_listener(self.receiver_notify)
-        self._notify_widget: NotifyWidget = NotifyWidget()
+        self._observer_widget.set_listener(self._receiver_notify)
+        self._notify_provider: NotifyWidget = NotifyWidget()
+        self._buttons: set[ttk.Button] = set()
+        self._content_labels: set[ttk.Label] = set()
+        self._tree_views: set[ttk.Treeview] = set()
+        self._combos: set[ttk.Combobox] = set()
+
+    def add_tree_view(self, **kwargs) -> ttk.Treeview:
+        tree = ttk.Treeview(self, **kwargs)
+        self._tree_views.add(tree)
+        return tree
+
+    def add_button(self, **kwargs) -> ttk.Button:
+        '''
+            VALID_TTK_OPTIONS = {
+            "class_", "compound", "cursor", "image", "name",
+            "padding", "state", "style", "takefocus",
+            "text", "textvariable", "underline", "width", "command"
+            }
+        '''
+        btn = ttk.Button(self, **kwargs)
+        self._buttons.add(btn)
+        return btn
+
+    def remove_button(self, btn: ttk.Button) -> None:
+        return self._buttons.remove(btn)
+
+    def add_combo_box(self, **kwargs) -> ttk.Combobox:
+        combo = ttk.Combobox(self, **kwargs)
+        self._combos.add(combo)
+        return combo
+
+    def get_combos(self) -> set[ttk.Combobox]:
+        return self._combos
+
+    def add_label(self, **kwargs) -> ttk.Label:
+        lb = ttk.Label(self, **kwargs)
+        self._content_labels.add(lb)
+        return lb
+
+    def remove_label(self, lb: ttk.Label) -> None:
+        return self._content_labels.remove(lb)
+
+    def get_labels(self) -> set[ttk.Label]:
+        return self._content_labels
+
+    def get_buttons(self) -> set[ttk.Button]:
+        return self._buttons
 
     def get_observer(self) -> ObserverWidget:
         return self._observer_widget
 
-    def receiver_notify(self, message: MessageNotification):
-        if message.get_message_type() == EnumMessages.MSG_UPDATE_STYLE:
+    def get_notify_provider(self) -> NotifyWidget:
+        return self._notify_provider
+
+    def _receiver_notify(self, message: MessageNotification):
+        """
+        Recebe um objeto MessageNotification() e toma uma ou mais ações
+        a partir do tipo de mensagem recebida.
+
+            Os tipos de mensagens recebidas estão na classe EnumMessages
+        se a mensagem recebida for do tipo EnumMessages.STYLE_UPDATE este
+        container e os filhos terão o estilo atualizados (cores/temas etc)
+        conforme as configurações de estilos recebidas nas mensagens.
+
+        O fluxo funciona com o Container() se auto atualizando e em seguida
+        aplicando a atualização aos widgets filhos, frames, buttons, label etc.
+
+        Quem envia mensagem é o próprio observador (propriedade self._observer_widget=ObserverWidget())
+        ou seja, para que esse Container() se torne um observador de um sujeito NOTIFICADOR qualquer,
+        basta adicionar a propriedade observador self._observer_widget=ObserverWidget() como ouvinte
+        de um NOTIFICADOR qualquer, quando o notificador enviar a(s) mensagem(s) elas serão recebidas
+        pela propriedade self._notify_widget=NotifyWidget() que repassará a esté Container() pois
+        ele em-si não é um observador, mas possui uma propriedade observador.
+        """
+        if message.get_message_type() == EnumMessages.STYLE_UPDATE:
+            # Atualizar o tema do container de conforme o valor de tema
+            # recebido na mensagem.
             conf_styles: ConfigMappingStyles = message.get_provider()
             self.config(style=conf_styles['frames'].value)
-        self.notify_listeners(message)
+            # Atualizar o tema dos botões
+            for btn in self._buttons:
+                btn.config(style=conf_styles['buttons'].value)
+            # Atualizar o tema dos labels
+            for lbl in self._content_labels:
+                lbl.config(style=conf_styles['labels'].value)
+            for tree in self._tree_views:
+                tree.configure(style=conf_styles['tree_view'].value)
+        self.get_notify_provider().send_notify(message)
 
-    def notify_listeners(self, message: MessageNotification):
-        self._notify_widget.send_notify(message)
 
-    def add_listener(self, listener: ObserverWidget):
-        self._notify_widget.add_observer(listener)
+class Row(object):
 
-    def remove_listener(self, listener: ObserverWidget):
-        self._notify_widget.remove_observer(listener)
+    def __init__(self, container_master: Container):
+        self._container_master = container_master
+        self._containers: set[Container] = set()
+        self._row_notify_provider: NotifyWidget = NotifyWidget()
+        self._row_notify_provider.add_observer(self._container_master.get_observer())
+        self._observer: ObserverWidget = ObserverWidget()
+        self._observer.set_listener(self._receiver_notify)
+        self.values_pack: dict[str, Any] = {
+            'side': 'left',
+            'padx': 1,
+            'pady': 1,
+            'fill': 'x',
+        }
+
+    def _receiver_notify(self, message: MessageNotification) -> None:
+        self.get_notify_provider().send_notify(message)
+
+    def get_observer(self) -> ObserverWidget:
+        return self._observer
+
+    def get_notify_provider(self) -> NotifyWidget:
+        return self._row_notify_provider
+
+    def add_container(self, **kwargs) -> Container:
+        container = Container(self._container_master, **kwargs)
+        self._containers.add(container)
+        return container
+
+    def add_button(self, **kwargs) -> ttk.Button:
+        return self._container_master.add_button(**kwargs)
+
+    def add_label(self, **kwargs) -> ttk.Label:
+        return self._container_master.add_label(**kwargs)
+
+    def get_container_master(self) -> Container:
+        return self._container_master
+
+    def pack_forget(self) -> None:
+        self._container_master.pack_forget()
+
+    def pack(self):
+
+        self._container_master.pack(
+            side=self.values_pack['side'], pady=self.values_pack['pady'],
+            padx=self.values_pack['padx'], fill=self.values_pack['fill'],
+        )
+        for _container in self._containers:
+            _container.pack(
+                side=self.values_pack['side'], pady=self.values_pack['pady'],
+                padx=self.values_pack['padx'], fill=self.values_pack['fill'],
+            )
+
+        for combo in self._container_master.get_combos():
+            combo.pack(
+                side=self.values_pack['side'], pady=self.values_pack['pady'],
+                padx=self.values_pack['padx'], fill=self.values_pack['fill'],
+            )
+
+        for btn in self._container_master.get_buttons():
+            btn.pack(
+                side=self.values_pack['side'], pady=self.values_pack['pady'],
+                padx=self.values_pack['padx'], fill=self.values_pack['fill'],
+            )
+
+        for lb in self._container_master.get_labels():
+            lb.pack(
+                side=self.values_pack['side'], pady=self.values_pack['pady'],
+                padx=self.values_pack['padx'], fill=self.values_pack['fill'],
+            )
 
 
 class ContainerH(Container):
@@ -316,5 +458,6 @@ class ProgressBar(object):
 
 
 __all__ = [
-    'Container', 'ContainerV', 'ContainerH', 'InterfaceProgressBar', 'ProgressBar'
+    'Container', 'ContainerV', 'ContainerH', 'InterfaceProgressBar',
+    'ProgressBar', 'Row'
 ]

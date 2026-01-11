@@ -34,9 +34,9 @@ class MenuBar(object):
             [str, tk.Menu, Optional[str], Optional[Callable]], int
         ] = add_item_menu
 
-        # -------------------------------------------------------------#
-        # Criar a barra superior
-        # -------------------------------------------------------------#
+        #===============================================================#
+        # Criar a barra superior MENU_BAR
+        #===============================================================#
         # Criar a barra superior principal
         self.master_menu_bar: tk.Menu = tk.Menu(self.myapp.get_window())
         self.myapp.get_window().config(menu=self.master_menu_bar)
@@ -89,7 +89,7 @@ class MenuBar(object):
         self.style_menu = tk.Menu(self.master_menu_bar, tearoff=0)
         self.master_menu_bar.add_cascade(label="Tema", menu=self.style_menu)
 
-        # Iniciar o tema
+        # Iniciar o tema da barra superior (MENU_BAR)
         self.set_theme_menu_bar(
             self._controller_conf.get_conf_styles()['menu_bar']
         )
@@ -123,31 +123,31 @@ class MenuBar(object):
         self.menu_option_style_app = tk.Menu(self.style_menu, tearoff=0)
         self.menu_option_style_app.add_command(
             label="Tema Escuro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_DARK),
         )
         self.menu_option_style_app.add_command(
             label="Tema Cinza Escuro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_DARK_GRAY),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_DARK_GRAY),
         )
         self.menu_option_style_app.add_command(
             label="Tema Cinza",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_GRAY),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_GRAY),
         )
         self.menu_option_style_app.add_command(
             label="Tema Claro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_LIGHT),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_LIGHT),
         )
         self.menu_option_style_app.add_command(
             label="Roxo Escuro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_PURPLE_DARK),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_PURPLE_DARK),
         )
         self.menu_option_style_app.add_command(
             label="Roxo Claro",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_PURPLE_LIGHT),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_PURPLE_LIGHT),
         )
         self.menu_option_style_app.add_command(
             label="Laranja",
-            command=lambda: self.update_theme_frames(EnumStyles.FRAME_ORANGE_DARK),
+            command=lambda: self.set_theme_frames(EnumStyles.FRAME_ORANGE_DARK),
         )
 
         # -------------------------------------------------------------#
@@ -167,10 +167,32 @@ class MenuBar(object):
             command=lambda: self.set_theme_buttons(EnumStyles.BUTTON_PURPLE_DARK),
         )
 
+        # -------------------------------------------------------------#
+        # Submenu para temas tree_view
+        # -------------------------------------------------------------#
+        self.menu_option_style_tree_view = tk.Menu(self.style_menu, tearoff=0)
+        self.menu_option_style_tree_view.add_command(
+            label="Escuro",
+            command=lambda: self.set_theme_tree_views(EnumStyles.TREE_VIEW_DARK),
+        )
+        self.menu_option_style_tree_view.add_command(
+            label="Roxo",
+            command=lambda: self.set_theme_tree_views(EnumStyles.TREE_VIEW_PURPLE),
+        )
+        self.menu_option_style_tree_view.add_command(
+            label="Roxo claro",
+            command=lambda: self.set_theme_tree_views(EnumStyles.TREE_VIEW_PURPLE_LIGHT),
+        )
+        self.menu_option_style_tree_view.add_command(
+            label="Verde",
+            command=lambda: self.set_theme_tree_views(EnumStyles.TREE_VIEW_GREEN),
+        )
+
         # Adicionar os submenus à barra de menu principal
         self.style_menu.add_cascade(label="Tema do App", menu=self.menu_option_style_app)
         self.style_menu.add_cascade(label="Tema da barra", menu=self.menu_option_style_top_bar)
         self.style_menu.add_cascade(label="Tema dos botões", menu=self.menu_option_style_buttons)
+        self.style_menu.add_cascade(label="Tema das tabelas", menu=self.menu_option_style_tree_view)
 
         # -------------------------------------------------------------#
         # Menu sobre (Versão do app etc)
@@ -187,7 +209,7 @@ class MenuBar(object):
 
         self._message_top_bar = MessageNotification(
             provider=self.myapp.get_styles_mapping(),
-            message_type=EnumMessages.MSG_UPDATE_STYLE,
+            message_type=EnumMessages.STYLE_UPDATE,
         )
 
     def add_item_menu(
@@ -237,7 +259,7 @@ class MenuBar(object):
             active_bg_color = "gray30"
             active_fg_color = "white"
         else:
-            print(f'{__class__.__name__} Tema não alterado | {print(new)} |')
+            print(f'{__class__.__name__} Tema não alterado | {new} |')
             return
 
         self.myapp.get_styles_mapping()['menu_bar'] = new
@@ -249,7 +271,11 @@ class MenuBar(object):
             activeforeground=active_fg_color
         )
 
-    def update_theme_frames(self, new: EnumStyles):
+    def set_theme_tree_views(self, new: EnumStyles):
+        self.myapp.get_styles_mapping()['tree_view'] = new  # Singleton em todo o projeto.
+        self.myapp.send_notify_listeners(self._message_top_bar)
+
+    def set_theme_frames(self, new: EnumStyles):
         self.myapp.get_styles_mapping()['frames'] = new
         self.myapp.get_styles_mapping()['last_update'] = 'frames'
         self.myapp.send_notify_listeners(self._message_top_bar)

@@ -4,7 +4,7 @@ from typing import Callable
 from tkinter import (ttk, Tk, messagebox)
 from app_variacao.app.ui.core_types import (
     AbstractObserver, ObserverWidget, ConfigMappingStyles, NotifyWidget,
-    MessageNotification, EnumStyles, EnumMessages,
+    MessageNotification, EnumStyles, EnumMessages, AppStyles
 )
 from app_variacao.app.controllers.controller_main_app import ControllerMainApp
 
@@ -33,204 +33,8 @@ def update_theme_tk_window(new: EnumStyles, wind: tk.Tk):
 
 
 #=================================================================#
-# Temas e Estilos
+# Base para Janelas
 #=================================================================#
-
-class AppStyles(object):
-
-    def __init__(self, window: Tk):
-        self.root_window = window
-        self.root_style = ttk.Style(self.root_window)
-        self.PADDING_BTN = (6, 8)
-        self.WIDTH_BTN = 13
-
-        # ==============================================================#
-        # Estilo para os Frames
-        # ==============================================================#
-        # LightFrame
-        self.styleLight = ttk.Style(self.root_window)
-        self.styleLight.configure(
-            "LightFrame.TFrame",
-            background="white",
-            relief="solid",
-            borderwidth=1
-        )
-        # CinzaFrame.TFrame
-        self.styleGray = ttk.Style(self.root_window)
-        self.styleGray.configure(
-            "CinzaFrame.TFrame",
-            background="lightgray",
-            relief="solid",
-            borderwidth=1
-        )
-        # Black.TFrame
-        self.styleFrameBlack = ttk.Style(self.root_window)
-        self.styleFrameBlack.theme_use("default")
-        self.styleFrameBlack.configure(
-            "Black.TFrame",
-            background="#2C2C2C"
-        )  # Cor de fundo preto
-        # Estilo LightPurple.TFrame - Fundo Roxo Claro
-        self.styleFrameLightPurple = ttk.Style(self.root_window)
-        self.styleFrameLightPurple.theme_use("default")
-        self.styleFrameLightPurple.configure(
-            "LightPurple.TFrame",  # Nome do estilo alterado
-            background="#9370DB"  # Roxo claro (MediumPurple)
-        )
-        # Estilo DarkPurple.TFrame Fundo Roxo Escuro
-        self.styleFrameDarkPurple = ttk.Style(self.root_window)
-        self.styleFrameDarkPurple.theme_use("default")
-        self.styleFrameDarkPurple.configure(
-            "DarkPurple.TFrame",
-            background="#4B0082"  # Roxo escuro
-        )
-        # Estilo para Frame
-        self.styleFrameDarkGray = ttk.Style(self.root_window)
-        self.styleFrameDarkGray.theme_use("default")
-        self.styleFrameDarkGray.configure(
-            "DarkGray.TFrame",  # Nome do estilo alterado
-            background="#2F4F4F"  # Cinza escuro (DarkSlateGray)
-        )
-        # DarkOrange.TFrame
-        self.styleFrameDarkOrange = ttk.Style(self.root_window)
-        self.styleFrameDarkOrange.theme_use("default")
-        self.styleFrameDarkOrange.configure(
-            "DarkOrange.TFrame",  # Nome do estilo alterado
-            background="#FF8C00"  # Laranja escuro (DarkOrange)
-        )
-        # ==============================================================#
-        # Estilo para os botões
-        # ==============================================================#
-        # Roxo Claro
-        self.styleButtonPurpleLight = ttk.Style(self.root_window)
-        self.styleButtonPurpleLight.theme_use("default")
-        self.styleButtonPurpleLight.layout(
-            "Custom.TButtonPurpleLight",
-            self.styleButtonPurpleLight.layout("TButton")
-        )
-        # Define o estilo do botão roxo claro
-        self.styleButtonPurpleLight.configure(
-            "Custom.TButtonPurpleLight",
-            foreground="white",
-            background="#B388EB",  # Roxo claro
-            borderwidth=1,
-            focusthickness=3,
-            focuscolor='none',
-            anchor='center',
-            padding=self.PADDING_BTN,
-            width=self.WIDTH_BTN,
-        )
-        self.styleButtonPurpleLight.map(
-            "Custom.TButtonPurpleLight",
-            background=[("active", "#a070d6"), ("pressed", "#8b5fc0")]
-        )
-        # Verde
-        self.styleButtonGreen = ttk.Style(self.root_window)
-        self.styleButtonGreen.theme_use("default")
-        self.styleButtonGreen.layout(
-            "Custom.TButtonGreen",
-            self.styleButtonGreen.layout("TButton")
-        )
-        # Define o estilo do botão verde
-        self.styleButtonGreen.configure(
-            "Custom.TButtonGreen",
-            foreground="white",
-            background="#5cb85c",  # Verde
-            borderwidth=1,
-            focusthickness=3,
-            focuscolor='none',
-            anchor='center',
-            padding=self.PADDING_BTN,
-            width=self.WIDTH_BTN,
-        )
-        self.styleButtonGreen.map(
-            "Custom.TButtonGreen",
-            background=[("active", "#4cae4c"), ("pressed", "#449d44")]
-        )
-
-        # ==============================================================#
-        # Estilo para os botões - Roxo Escuro
-        # ==============================================================#
-        self.styleButtonPurpleDark = ttk.Style(self.root_window)
-        self.styleButtonPurpleDark.theme_use("default")
-        self.styleButtonPurpleDark.layout(
-            "Custom.TButtonPurpleDark",
-            self.styleButtonPurpleDark.layout("TButton")
-        )
-        # Define o estilo do botão roxo escuro
-        self.styleButtonPurpleDark.configure(
-            "Custom.TButtonPurpleDark",
-            foreground="white",
-            background="#6247AA",  # Roxo escuro
-            borderwidth=1,
-            focusthickness=3,
-            focuscolor='none',
-            anchor='center',
-            padding=self.PADDING_BTN,
-            width=self.WIDTH_BTN,
-        )
-        # Mapeamento de cores para interação
-        self.styleButtonPurpleDark.map(
-            "Custom.TButtonPurpleDark",
-            background=[
-                ("active", "#503990"),  # Tom um pouco mais escuro quando passa o mouse
-                ("pressed", "#402D73")  # Tom bem mais escuro quando clica
-            ]
-        )
-
-        # ==============================================================#
-        # Estilo para Labels
-        # ==============================================================#
-        self.styleLabelPurple = ttk.Style(self.root_window)
-        self.styleLabelPurple.configure(
-            "LargeFont.TLabel",  # Nome do estilo
-            font=("Helvetica", 14),  # Fonte maior
-            background="#9370DB",  # Cor de fundo roxo claro
-            foreground="white"  # Cor do texto branco
-        )
-        # Default
-        self.styleLabelDefault = ttk.Style(self.root_window)
-        self.styleLabelDefault.configure(
-            "BoldLargeFont.TLabel",  # Nome do estilo
-            font=("Helvetica", 14, "bold")  # Fonte maior e negrito
-        )
-
-        # ==============================================================#
-        # Estilo para Barra de progresso
-        # ==============================================================#
-        # Verde
-        self.stylePbarGreen = ttk.Style(self.root_window)
-        self.stylePbarGreen.theme_use('default')
-        # Define o novo estilo
-        self.stylePbarGreen.configure(
-            "Custom.Horizontal.TProgressbar",
-            troughcolor='#f0f0f0',  # cor de fundo da barra
-            background='#4CAF50',  # cor da barra de progresso
-            thickness=6,  # espessura da barra
-            bordercolor='#cccccc',  # borda
-            lightcolor='#4CAF50',  # brilho da barra
-            darkcolor='#4CAF50',  # sombra da barra
-        )
-        # Barra de progresso Roxo claro
-        self.stylePbarPurpleLight = ttk.Style(self.root_window)
-        self.stylePbarPurpleLight.theme_use('default')
-        self.stylePbarPurpleLight.configure(
-            "Thin.Horizontal.TProgressbar",
-            thickness=6,  # altura fina
-            troughcolor="#eeeeee",  # fundo da barra
-            background="#D19FE8"  # roxo claro
-            )
-        # Barra de progresso Roxo escuro
-        self.stylePbarPurple = ttk.Style(self.root_window)
-        self.stylePbarPurple.theme_use('default')
-        self.stylePbarPurple.configure(
-            "Purple.Horizontal.TProgressbar",
-            thickness=6,  # altura fina
-            troughcolor="#eeeeee",  # fundo da barra
-            background="#4B0081"
-           )
-
-
 class BaseWindow(Tk):
 
     def __init__(
@@ -244,8 +48,7 @@ class BaseWindow(Tk):
         self._app_style: AppStyles = AppStyles(self)
         # Observador genérico para a janela
         self._window_observer = ObserverWidget()
-        # Adicionar ao observador o método receiver_notify para receber notificações
-        self._window_observer.add_listener(self.receiver_notify)
+        self._window_observer.set_listener(self.receiver_notify)
         self._window_theme: EnumStyles = EnumStyles.WINDOW_DARK
         self.update_window_theme(self._window_theme)
 
@@ -256,7 +59,7 @@ class BaseWindow(Tk):
         return self._window_observer
 
     def receiver_notify(self, message: MessageNotification):
-        if message.get_message_type().value == EnumMessages.MSG_UPDATE_STYLE.value:
+        if message.get_message_type().value == EnumMessages.STYLE_UPDATE.value:
             _mapping: ConfigMappingStyles = message.get_provider()
             if _mapping['last_update'] == "app":
                 self.update_window_theme(_mapping['app'])
@@ -324,6 +127,7 @@ class BasePage(ttk.Frame):
             )
         self.myapp_window: BaseWindow = master
         self.func_go_page: Callable[[str], None] = go_page
+        self._page_style: EnumStyles = EnumStyles.FRAME_DARK_GRAY
         self.GEOMETRY: str = '400x300'
         self._page_name: str = None
         self._page_route: str = None
@@ -331,57 +135,49 @@ class BasePage(ttk.Frame):
         # Receber notificações externas
         self._observer: ObserverWidget = ObserverWidget()
         # se inscrever no próprio observador para receber as notificações externas.
-        self._observer.add_listener(self.receiver_notify)
-
+        self._observer.set_listener(self._receiver_notify)
         # Enviar notificações para outros objetos, os objetos externos que precisam
         # ser notificados devem se inscrever no objeto notificador NotifyWidget()
         self._page_change_notify: NotifyWidget = NotifyWidget()
 
-        self.frame_master: ttk.Frame = ttk.Frame(self)
-        self.frame_master.pack(expand=True, fill='both', padx=2, pady=2)
-        self._page_style: EnumStyles = EnumStyles.FRAME_DARK_GRAY
+        self._frame_master: ttk.Frame = ttk.Frame(self)
+        self._frame_master.pack(expand=True, fill='both', padx=2, pady=1)
+
 
     def __repr__(self):
         return f'{__class__.__name__}() {self.get_page_name()}'
+
+    def get_frame_master(self) -> ttk.Frame:
+        return self._frame_master
 
     def get_page_style(self) -> EnumStyles:
         return self._page_style
 
     def set_page_style(self, style: EnumStyles):
         self._page_style = style
-        self.configure(style=style.value)
+        self._frame_master.configure(style=style.value)
 
     def init_ui_page(self, **kwargs):
-        self.frame_master.configure(
+        self._frame_master.configure(
             style=self._page_style.value,
         )
+
+    def get_notify_provider(self) -> NotifyWidget:
+        return self._page_change_notify
 
     def get_observer(self) -> ObserverWidget:
         return self._observer
 
-    def add_listener(self, listener: AbstractObserver):
-        """
-            Adicionar ouvintes desta página
-        """
-        self._page_change_notify.add_observer(listener)
-
-    def notify_listeners(self, message: MessageNotification):
-        """
-            Nofiticar ouvintes dá página.
-        """
-        self._page_change_notify.send_notify(message)
-
-    def receiver_notify(self, msg: MessageNotification):
+    def _receiver_notify(self, msg: MessageNotification):
         """
             Receber notificações externas de outros objetos.
         """
-        if msg.get_message_type().value == EnumMessages.MSG_UPDATE_STYLE.value:
+        if msg.get_message_type().value == EnumMessages.STYLE_UPDATE.value:
             conf_styles: ConfigMappingStyles = msg.get_provider()
             self.set_page_style(conf_styles['frames'])
-            self.update_page_state(msg)
-            self.notify_listeners(msg)
         else:
             print(f'DEBUG: {__class__.__name__} Nenhuma configurada para essa notificação: {msg.keys()}')
+        self.get_notify_provider().send_notify(msg)
 
     def set_geometry(self, geometry: str):
         self.myapp_window.geometry(geometry)
@@ -401,14 +197,6 @@ class BasePage(ttk.Frame):
     def set_size_screen(self):
         self.myapp_window.geometry(self.GEOMETRY)
         self.myapp_window.title(f'{self.get_page_name().upper()}')
-
-    def update_page_state(self, msg: MessageNotification):
-        if EnumMessages.MSG_PROCESS_FINISHED.value == msg.get_message_type().value:
-            print(f'{__class__.__name__} Nenhuma ação configurada para essa notificação!')
-        else:
-            print(
-                f'{__class__.__name__} Nenhuma ação configurada para essa notificação update_page_state\n{msg}\n'
-            )
 
 
 class Navigator(object):
@@ -438,7 +226,6 @@ class Navigator(object):
         if page.get_page_route() in self.get_pages_route():
             return
         self._app_pages[page.get_page_route()] = page
-        print(f'Página adicionada: {page.get_page_route()}')
 
     def get_pages(self) -> dict[str, BasePage]:
         return self._app_pages
@@ -512,8 +299,11 @@ class MyApp(object):
         self._navigator: Navigator = Navigator()
         self._base_window: BaseWindow = BaseWindow()
         self._app_observer: ObserverWidget = ObserverWidget()
-        self._app_observer.add_listener(self.receiver_notify)
+        self._app_observer.set_listener(self.receiver_notify)
         self._app_change_notify: NotifyWidget = NotifyWidget()
+
+    def get_notify_provider(self) -> NotifyWidget:
+        return self._app_change_notify
 
     def receiver_notify(self, message: MessageNotification):
         pass
@@ -522,6 +312,7 @@ class MyApp(object):
         self._app_change_notify.add_observer(listener)
 
     def send_notify_listeners(self, message: MessageNotification):
+        print(f'{__class__.__name__} Repassando notificação: {message.keys()}')
         self._app_change_notify.send_notify(message)
 
     def get_styles_app(self) -> AppStyles:
@@ -543,7 +334,6 @@ class MyApp(object):
         """
         Adiciona uma página ao navegador de páginas
         """
-        #page.set_page_style(self.get_styles_mapping()['frames'])
         self.add_listener(page.get_observer())
         self._navigator.add_page(page)
 
@@ -571,4 +361,3 @@ __all__ = [
     'AppStyles', 'ObserverWidget', 'NotifyWidget', 'BaseWindow', 'BasePage',
     'Navigator', 'MyApp', 'run_app', 'show_info', 'show_alert',
 ]
-

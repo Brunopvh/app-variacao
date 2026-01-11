@@ -83,7 +83,7 @@ class AppFileDialog(object):
             Caixa de diálogo para selecionar um arquivo
         """
         self._config_pop_up_open_filename(file_ext_type)
-        print(f'{__class__.__name__}  | {file_ext_type}')
+        #print(f'{__class__.__name__}  | {file_ext_type}')
         filename: str = filedialog.askopenfilename(
             title=self.title_pop_up_files,
             initialdir=self.model_prefs.get_conf_file_dialog()["initial_input_dir"].absolute(),

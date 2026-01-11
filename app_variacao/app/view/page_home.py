@@ -23,17 +23,15 @@ class HomePage(BasePage):
 
         self.GEOMETRY = '500x250'
         self.set_page_name('Página Principal')
-        self._main_frame = Container(self.frame_master)
-        self.add_listener(self._main_frame.get_observer())
+        self._main_frame = Container(self._frame_master)
+        self.get_notify_provider().add_observer(self._main_frame.get_observer())
 
-        self.lb1 = ttk.Label(
-            self._main_frame,
+        self.lb1 = self._main_frame.add_label(
             text="Página Inicial",
             style=EnumStyles.LABEL_DEFAULT.value,
         )
 
-        self.btn_variacao = ttk.Button(
-            self._main_frame,
+        self.btn_variacao = self._main_frame.add_button(
             text='Variação de Leitura',
             command=lambda: self.func_go_page('/variacao'),
             width=45,
@@ -42,8 +40,8 @@ class HomePage(BasePage):
 
     def init_ui_page(self, **kwargs):
         self.pack(expand=True, fill='both', padx=2, pady=1)
-        self.frame_master.pack(fill='both', padx=2, pady=1, expand=True)
+        self._frame_master.pack(fill='both', padx=2, pady=1, expand=True)
         self._main_frame.pack(fill='both', padx=2, pady=1, expand=True)
         self.lb1.pack(padx=2, pady=2)
-        self.btn_variacao.pack(padx=2, pady=2)
+        self.btn_variacao.pack(padx=2, pady=1)
 

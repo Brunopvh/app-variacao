@@ -24,7 +24,7 @@ class AppVariacao(MyApp):
         # Alterar os temas dos widgets conforme as configurações.
         map_styles: ConfigMappingStyles = self._controller.get_conf_styles()
         msg = MessageNotification(
-            message_type=EnumMessages.MSG_UPDATE_STYLE,
+            message_type=EnumMessages.STYLE_UPDATE,
             provider=map_styles,
         )
         self.send_notify_listeners(msg)
