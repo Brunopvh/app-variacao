@@ -58,27 +58,32 @@ class DataImportConfigView(Container):
 
         # Seleção de Arquivo
         self.container_select_file = Container(self.main_container)
-        self.row_select_files = Row(self.container_select_file)
-        self.get_notify_provider().add_observer(self.row_select_files.get_observer())
-        self.btn_select_sheet = self.row_select_files.add_button(
+        self.container_select_file.pack(fill='x', padx=2, pady=1)
+        self.get_notify_provider().add_observer(self.container_select_file.get_observer())
+        self.btn_select_sheet = self.container_select_file.add_button(
             text='Selecionar Planilha',
             command=self.on_select_file,
-            width=16,
+            padding=(13, 5),
+            width=16
         )
-        self.lbl_file_path = self.row_select_files.add_label(
+        self.btn_select_sheet.pack(fill='x', padx=2, pady=1, side='left')
+        self.lbl_file_path = self.container_select_file.add_label(
             text="Nenhum arquivo selecionado", wraplength=400
         )
-        self.row_select_files.pack()
+        self.lbl_file_path.pack(fill='x', padx=2, pady=1)
 
         #==========================================================#
         # Containers de Opções
         #==========================================================#
-        self.options_container: Container = Container(self.container_select_file)
+        self.options_container: Container = Container(self.main_container)
         self.options_container.pack(fill='x', expand=True, padx=2, pady=1)
+        self.get_notify_provider().add_observer(self.options_container.get_observer())
 
         # Opções CSV/Excel
         self.row_options_csv = Row(Container(self.options_container))
         self.row_excel = Row(Container(self.options_container))
+        self.get_notify_provider().add_observer(self.row_options_csv.get_observer())
+        self.get_notify_provider().add_observer(self.row_excel.get_observer())
 
         # Variáveis
         _default_sep = list(self.csv_mapping_separator.keys())[0]
