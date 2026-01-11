@@ -1,11 +1,10 @@
 from __future__ import annotations
 import tkinter as tk
-from tkinter import ttk
-from app_variacao.app.ui import Container, ContainerV, ContainerH, show_alert
+from app_variacao.app.ui import Container
 from app_variacao.app.ui.core_widgets import Row
 from app_variacao.app.controllers import ControllerViewVariacao
 from app_variacao.app.app_types import ConfigSheetCsv, ConfigSheetExcel
-from app_variacao.documents.sheet import CsvSeparator, CsvEncoding, CsvMapping
+from app_variacao.documents.sheet import CsvSeparator, CsvEncoding
 from app_variacao.util import File
 from typing import TypedDict
 
@@ -94,13 +93,13 @@ class DataImportConfigView(Container):
         )
         self._lb_csv_sep = self.row_options_csv.add_label(text="Separador: ")
         self._combo_sep = self.row_options_csv.get_container_master().add_combo_box(
-            textvariable=self.var_sep, width=10,
+            textvariable=self.var_sep, width=8,
             values=list(self.csv_mapping_separator.keys()),
             state='readonly'
         )
         # Widgets Encoding
         self._combo_csv_encoding = self.row_options_csv.get_container_master().add_combo_box(
-            textvariable=self.var_encoding, width=10, state='readonly',
+            textvariable=self.var_encoding, width=8, state='readonly',
             values=list(self.csv_mapping_encoding.keys())
         )
         self._lb_encoding = self.row_options_csv.add_label(text="Encoding: ")

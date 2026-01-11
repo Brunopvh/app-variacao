@@ -17,9 +17,7 @@ class DataSheetView(Container):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
-        # 1. Criação do Treeview
-        # 'show="headings"' esconde a primeira coluna vazia padrão do Tkinter
-        #self.tree_view = ttk.Treeview(self, show="headings", selectmode="browse")
+        # Criação do Treeview
         self.tree_view = self.add_tree_view(show="headings", selectmode="browse")
 
         # 2. Configuração dos Scrollbars

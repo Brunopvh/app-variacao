@@ -27,11 +27,17 @@ class Container(ttk.Frame):
         self._content_labels: set[ttk.Label] = set()
         self._tree_views: set[ttk.Treeview] = set()
         self._combos: set[ttk.Combobox] = set()
+        self._progress_bar: set[ttk.Progressbar] = set()
 
     def add_tree_view(self, **kwargs) -> ttk.Treeview:
         tree = ttk.Treeview(self, **kwargs)
         self._tree_views.add(tree)
         return tree
+
+    def add_pbar(self, **kwargs) -> ttk.Progressbar:
+        pbar = ttk.Progressbar(self, **kwargs)
+        self._progress_bar.add(pbar)
+        return pbar
 
     def add_button(self, **kwargs) -> ttk.Button:
         '''
@@ -109,6 +115,8 @@ class Container(ttk.Frame):
                 lbl.config(style=conf_styles['labels'].value)
             for tree in self._tree_views:
                 tree.configure(style=conf_styles['tree_view'].value)
+            for pbar in self._progress_bar:
+                pbar.config(style=conf_styles['pbar'].value)
         self.get_notify_provider().send_notify(message)
 
 
@@ -185,36 +193,11 @@ class Row(object):
             )
 
 
-class ContainerH(Container):
+class Column(Row):
 
-    def __init__(
-                self, master=None, *, border=None,
-                borderwidth=None, class_="", cursor="",
-                height=0, name=None, padding=None, relief=None,
-                style="", takefocus="", width=0
-            ):
-        super().__init__(
-                master, border=border, borderwidth=borderwidth, class_=class_,
-                cursor=cursor, height=height, name=name, padding=padding,
-                relief=relief, style=style, takefocus=takefocus, width=width
-            )
-        pass
-
-
-class ContainerV(Container):
-
-    def __init__(
-                self, master=None, *, border=None,
-                borderwidth=None, class_="", cursor="",
-                height=0, name=None, padding=None, relief=None,
-                style="", takefocus="", width=0
-            ):
-        super().__init__(
-                master, border=border, borderwidth=borderwidth, class_=class_,
-                cursor=cursor, height=height, name=name, padding=padding,
-                relief=relief, style=style, takefocus=takefocus, width=width
-            )
-        pass
+    def __init__(self, container_master: Container):
+        super().__init__(container_master)
+        self.values_pack['side'] = 'bottom'
 
 
 class InterfaceProgressBar(ABC):
@@ -314,20 +297,19 @@ class ProgressBarTkIndeterminate(InterfaceProgressBar):
         super().__init__()
         self._container: Container = container
         self._lb_text = ttk.Label(self._container, text='-')
-        self._real_pbar: ttk.Progressbar = ttk.Progressbar(
-            self._container, mode=mode
-        )
+        self._real_pbar: ttk.Progressbar = self._container.add_pbar(mode=mode)
 
     def get_real_pbar(self) -> ttk.Progressbar:
         return self._real_pbar
 
     def init_pbar(self, **kwargs):
-        self._lb_text.pack(fill='both', pady=1, padx=1)
-        self._container.pack(fill='x', padx=1, pady=1)
-        self._real_pbar.pack(fill='x', padx=1, pady=1)
+        self._lb_text.pack(fill='both', pady=2, padx=1)
+        self._container.pack(fill='x', padx=2, pady=1)
+        self._real_pbar.pack(fill='x', padx=2, pady=1)
+
         if kwargs:
-            if 'style' in kwargs.keys():
-                self._real_pbar.configure(style=kwargs['style'])
+            if 'style' in kwargs.get("kwargs").keys():
+                self._real_pbar.configure(style=kwargs.get("kwargs")["style"])
         self._real_pbar.pack(fill='x', padx=2, pady=1)
 
     def start(self):
@@ -458,6 +440,6 @@ class ProgressBar(object):
 
 
 __all__ = [
-    'Container', 'ContainerV', 'ContainerH', 'InterfaceProgressBar',
+    'Container', 'InterfaceProgressBar',
     'ProgressBar', 'Row'
 ]

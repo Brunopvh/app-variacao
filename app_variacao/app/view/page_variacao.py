@@ -3,7 +3,7 @@ from tkinter import ttk
 import tkinter as tk
 from app_variacao.app.ui import (
     BasePage, BaseWindow, Container, EnumStyles, show_alert, show_info,
-    ProgressBar, InterfaceProgressBar,
+    ProgressBar
 )
 from app_variacao.app.controllers import ControllerViewVariacao
 from app_variacao.app.app_types import ConfigSheetCsv, ConfigSheetExcel
@@ -46,23 +46,29 @@ class PageVariacao(BasePage):
         # Container 3 - Exibição dos dados
         # =============================================================#
         self.container_sheet_view = Container(self._frame_master)
-        self.data_view: DataSheetView = DataSheetView(self.container_sheet_view)
+
+        # Variação de leitura
+        self.container_variacao = Container(self.container_sheet_view)
+        self._lbl_title = self.container_variacao.add_label(text='Planilha Variação')
+        self.data_view: DataSheetView = DataSheetView(self.container_variacao)
         self.get_notify_provider().add_observer(self.data_view.get_observer())
+
+        # Colaboradores
 
     def back_page(self):
         self.func_go_page('/back')
 
     def init_ui_page(self, **kwargs):
         self.container_pbar.pack(fill='x', padx=2, pady=1)
-        self.pbar.init_pbar(
-            kwargs={'style': EnumStyles.PBAR_GREEN}
-        )
+        self.pbar.init_pbar(kwargs={'style': EnumStyles.PBAR_PURPLE.value})
         self.container_buttons.pack(padx=2, pady=2, fill='x')
-        self.btn_read.pack(pady=10, side=tk.LEFT)
+        self.btn_read.pack(pady=2, padx=2, side='left', fill='x',)
 
         self.container_import.pack(fill='x', padx=3, pady=2)
-        # O DataSheetView deve ocupar o espaço restante
         self.container_sheet_view.pack(expand=True, fill='both', padx=2, pady=2)
+        # DataSheetView - Variação
+        self.container_variacao.pack(expand=True, fill='both', padx=2, pady=2)
+        self._lbl_title.pack(fill='x', padx=2, pady=1)
         self.data_view.pack(expand=True, fill='both', padx=4, pady=3)
 
     def load_data_to_view(self):
